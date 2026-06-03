@@ -28,7 +28,6 @@
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
     
-    // Make db and collection references globally accessible (for window functions)
     window.db = db;
     window.newsCollection = collection(db, "news");
     window.teamCollection = collection(db, "itTeam");
@@ -98,6 +97,15 @@
       visibility: visible;
       opacity: 1;
     }
+    /* image preview */
+    .image-preview {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #f97316;
+      background: #fef3c7;
+    }
   </style>
 </head>
 <body>
@@ -164,14 +172,23 @@
         <div class="flex gap-3 mb-6"><button id="addNewsBtn" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2.5 rounded-xl font-semibold"><i class="fas fa-plus"></i> Publish / Update</button><button id="resetNewsFormBtn" class="border border-gray-300 px-5 rounded-xl hover:bg-gray-50">Clear</button></div>
         <div><label class="font-medium text-gray-700 text-sm">📰 Live Articles (Firestore)</label><div id="adminNewsList" class="mt-3 space-y-2 max-h-80 overflow-y-auto pr-1"></div></div>
       </div>
-      <!-- IT Team Management -->
+      <!-- IT Team Management with image preview fix -->
       <div class="bg-white rounded-xl shadow-sm border border-orange-100 p-6">
         <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-user-tie text-orange-500"></i> IT Leadership Directory (Cloud)</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           <input type="text" id="teamName" placeholder="Full Name *" class="border border-gray-200 rounded-xl px-4 py-2.5">
           <input type="text" id="teamDesignation" placeholder="Designation *" class="border border-gray-200 rounded-xl px-4 py-2.5">
           <input type="text" id="teamContact" placeholder="WhatsApp Number *" class="border border-gray-200 rounded-xl px-4 py-2.5">
-          <input type="text" id="teamImageUrl" placeholder="Image URL (optional)" class="border border-gray-200 rounded-xl px-4 py-2.5">
+          <div class="col-span-1 md:col-span-2 lg:col-span-1">
+            <input type="text" id="teamImageUrl" placeholder="Image URL (direct link, e.g., https://example.com/photo.jpg)" class="border border-gray-200 rounded-xl px-4 py-2.5 w-full">
+          </div>
+          <div class="flex items-center gap-3">
+            <div id="imagePreviewContainer" class="w-16 h-16 rounded-full bg-gray-100 border-2 border-orange-300 flex items-center justify-center overflow-hidden">
+              <img id="imagePreview" src="" alt="Preview" class="w-full h-full object-cover hidden">
+              <i id="previewPlaceholder" class="fas fa-user text-gray-400 text-2xl"></i>
+            </div>
+            <span class="text-xs text-gray-400">Live preview</span>
+          </div>
           <button id="addTeamBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-2.5 font-semibold flex items-center justify-center gap-2"><i class="fas fa-user-plus"></i> Add/Update Member</button>
           <button id="resetTeamFormBtn" class="border border-gray-300 rounded-xl px-5 py-2.5 hover:bg-gray-50">Reset</button>
         </div>
@@ -191,7 +208,6 @@
 </div>
 
 <script type="module">
-  // Firebase already imported via module above; we need to access db and collections from window
   import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
   const db = window.db;
   const newsCol = collection(db, "news");
@@ -200,10 +216,30 @@
   let editNewsId = null, editTeamId = null;
   const DEFAULT_IT_ENGINEER = "923219876543"; // change to actual engineer
 
-  // Helper to show/hide loading overlay
   function showLoading(show) { const el = document.getElementById('loadingOverlay'); if(show) el.classList.add('active'); else el.classList.remove('active'); }
 
-  // Render news from Firestore
+  // Image preview logic for admin form
+  const teamImageUrlInput = document.getElementById('teamImageUrl');
+  const imagePreview = document.getElementById('imagePreview');
+  const previewPlaceholder = document.getElementById('previewPlaceholder');
+  function updateImagePreview(url) {
+    if (url && url.trim() !== "") {
+      imagePreview.src = url;
+      imagePreview.classList.remove('hidden');
+      previewPlaceholder.classList.add('hidden');
+      imagePreview.onerror = () => {
+        // if fails, show placeholder
+        imagePreview.classList.add('hidden');
+        previewPlaceholder.classList.remove('hidden');
+      };
+    } else {
+      imagePreview.classList.add('hidden');
+      previewPlaceholder.classList.remove('hidden');
+    }
+  }
+  teamImageUrlInput.addEventListener('input', (e) => updateImagePreview(e.target.value));
+
+  // Render news
   async function renderNewsFeed() {
     const container = document.getElementById('newsFeedContainer');
     if (!container) return;
@@ -231,10 +267,12 @@
       const team = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       if (team.length === 0) { container.innerHTML = '<div class="col-span-full text-center py-10 glass-modern">No team members</div>'; return; }
       container.innerHTML = team.map(m => {
-        const img = m.imageUrl && m.imageUrl.trim() ? m.imageUrl : `https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true`;
+        const imgUrl = m.imageUrl && m.imageUrl.trim() ? m.imageUrl : null;
+        // Use imgUrl if valid, else fallback to UI Avatars
+        const finalImg = imgUrl ? imgUrl : `https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true`;
         return `
           <div class="glass-modern rounded-2xl overflow-hidden border border-orange-100 shadow-md card-hover p-5 text-center">
-            <img src="${img}" onerror="this.src='https://ui-avatars.com/api/?background=f97316&color=fff&name=${m.name.charAt(0)}'" class="w-28 h-28 rounded-full mx-auto object-cover border-4 border-orange-200">
+            <img src="${finalImg}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true'" class="w-28 h-28 rounded-full mx-auto object-cover border-4 border-orange-200">
             <h3 class="font-bold text-xl mt-4">${m.name}</h3>
             <p class="text-orange-600 font-medium text-sm">${m.designation}</p>
             <p class="text-gray-400 text-xs mt-1">${m.contact}</p>
@@ -245,7 +283,7 @@
     } catch(e) { console.error(e); container.innerHTML = '<div class="col-span-full text-center text-red-500">Error loading team</div>'; }
   }
 
-  // Admin lists with edit/delete
+  // Admin lists
   async function renderAdminNewsList() {
     const container = document.getElementById('adminNewsList');
     if (!container) return;
@@ -275,10 +313,10 @@
         <div class="flex gap-2"><button class="editTeamBtn bg-white border border-orange-300 text-orange-700 px-3 py-1 rounded-lg text-sm" data-id="${m.id}" data-name="${m.name}" data-desig="${m.designation}" data-contact="${m.contact}" data-img="${m.imageUrl || ''}"><i class="fas fa-edit"></i></button><button class="deleteTeamBtn bg-white border border-red-200 text-red-600 px-3 py-1 rounded-lg text-sm" data-id="${m.id}"><i class="fas fa-trash"></i></button></div>
       </div>
     `).join('');
-    document.querySelectorAll('.editTeamBtn').forEach(btn => btn.addEventListener('click', () => { editTeamId = btn.dataset.id; document.getElementById('teamName').value = btn.dataset.name; document.getElementById('teamDesignation').value = btn.dataset.desig; document.getElementById('teamContact').value = btn.dataset.contact; document.getElementById('teamImageUrl').value = btn.dataset.img; document.getElementById('addTeamBtn').innerHTML = '<i class="fas fa-save"></i> Update Member'; }));
+    document.querySelectorAll('.editTeamBtn').forEach(btn => btn.addEventListener('click', () => { editTeamId = btn.dataset.id; document.getElementById('teamName').value = btn.dataset.name; document.getElementById('teamDesignation').value = btn.dataset.desig; document.getElementById('teamContact').value = btn.dataset.contact; document.getElementById('teamImageUrl').value = btn.dataset.img; updateImagePreview(btn.dataset.img); document.getElementById('addTeamBtn').innerHTML = '<i class="fas fa-save"></i> Update Member'; }));
     document.querySelectorAll('.deleteTeamBtn').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Remove member?')){ showLoading(true); await deleteDoc(doc(db, "itTeam", btn.dataset.id)); await renderAdminTeamList(); await renderITTeam(); showLoading(false); if(editTeamId === btn.dataset.id) resetTeamForm(); } }));
   }
-  function resetTeamForm() { document.getElementById('teamName').value=''; document.getElementById('teamDesignation').value=''; document.getElementById('teamContact').value=''; document.getElementById('teamImageUrl').value=''; editTeamId=null; document.getElementById('addTeamBtn').innerHTML='<i class="fas fa-user-plus"></i> Add Member'; }
+  function resetTeamForm() { document.getElementById('teamName').value=''; document.getElementById('teamDesignation').value=''; document.getElementById('teamContact').value=''; document.getElementById('teamImageUrl').value=''; editTeamId=null; updateImagePreview(''); document.getElementById('addTeamBtn').innerHTML='<i class="fas fa-user-plus"></i> Add Member'; }
 
   // Admin session
   function isAdmin() { return sessionStorage.getItem('mp_admin') === 'true'; }
@@ -336,7 +374,7 @@
   await updateAdminUI();
 </script>
 <div class="text-center text-xs text-gray-400 border-t border-orange-200 max-w-7xl mx-auto px-4 pb-6 pt-5 mt-3">
-  <i class="fas fa-fire text-orange-500"></i> M&P TECH Cloud Portal | Admin: <strong>admin123</strong> | Data stored in Firebase Firestore
+  <i class="fas fa-fire text-orange-500"></i> M&P TECH Cloud Portal | Admin: <strong>admin123</strong> | Data stored in Firebase Firestore | Image URLs must be publicly accessible (direct link)
 </div>
 </body>
 </html>
