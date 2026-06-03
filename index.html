@@ -2,649 +2,314 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>ExecWatch | Logistics Competitor Intelligence Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>M&P TECH | Neo Command Center</title>
+  <!-- Google Fonts + Tailwind + Font Awesome -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-    }
-
+    * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      background: #f5f9ff;
-      transition: background 0.2s, color 0.2s;
-      padding: 32px 24px;
+      background: radial-gradient(circle at 10% 20%, rgba(255, 245, 235, 1) 0%, rgba(255, 235, 220, 1) 100%);
+      min-height: 100vh;
     }
-
-    body.dark-mode {
-      background: #0b1120;
-      color: #e2e8f0;
+    /* Modern glassmorphism + orange theme */
+    .glass-modern {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(249, 115, 22, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
     }
-
-    .app-container {
-      max-width: 1400px;
-      margin: 0 auto;
+    .orange-glow {
+      background: linear-gradient(135deg, #ff8c42, #ff5e00);
+      box-shadow: 0 8px 20px rgba(255, 94, 0, 0.25);
     }
-
-    /* header */
-    .dashboard-header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 28px;
-      background: rgba(255,255,255,0.7);
+    .card-hover {
+      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    }
+    .card-hover:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 25px 35px -12px rgba(249, 115, 22, 0.25);
+      border-color: rgba(249, 115, 22, 0.5);
+    }
+    .whatsapp-neon {
+      background: linear-gradient(105deg, #25D366, #128C7E);
+      box-shadow: 0 8px 18px rgba(37, 211, 102, 0.3);
+    }
+    .admin-panel-glow {
+      background: rgba(255, 255, 255, 0.97);
       backdrop-filter: blur(8px);
-      padding: 16px 28px;
-      border-radius: 48px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+      border-left: 5px solid #f97316;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
     }
-    body.dark-mode .dashboard-header {
-      background: rgba(30, 41, 59, 0.8);
-    }
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #166534, #2c7da0);
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
-    .subhead {
-      color: #4b5563;
-      font-size: 0.85rem;
-      margin-top: 4px;
-    }
-    body.dark-mode .subhead {
-      color: #94a3b8;
-    }
-    .dark-toggle {
-      background: #1e293b;
-      border: none;
-      padding: 10px 22px;
-      border-radius: 40px;
-      color: white;
-      font-weight: 500;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-    .dark-toggle:hover {
-      background: #2d3a5e;
-    }
-    body.dark-mode .dark-toggle {
-      background: #e2e8f0;
-      color: #0f172a;
-    }
-
-    /* stats panel */
-    .stats-panel {
-      background: white;
-      border-radius: 28px;
-      padding: 20px 28px;
-      margin-bottom: 28px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid #e2edf7;
-    }
-    body.dark-mode .stats-panel {
-      background: #1e293b;
-      border-color: #334155;
-    }
-    .stat-card {
-      background: #eef3fc;
-      padding: 8px 24px;
-      border-radius: 60px;
-      display: inline-flex;
-      align-items: baseline;
-      gap: 12px;
-    }
-    body.dark-mode .stat-card {
-      background: #0f172a;
-    }
-    .stat-number {
-      font-size: 2rem;
-      font-weight: 800;
-      color: #1f6392;
-    }
-    .platform-stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    .plat-badge-sm {
-      background: #eef2ff;
-      padding: 6px 16px;
-      border-radius: 40px;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
-    body.dark-mode .plat-badge-sm {
-      background: #2d3a5e;
-    }
-
-    /* add competitor form (manual) */
-    .form-card {
-      background: white;
-      border-radius: 28px;
-      padding: 24px;
-      margin-bottom: 28px;
-      border: 1px solid #e2edf7;
-    }
-    body.dark-mode .form-card {
-      background: #1e293b;
-      border-color: #334155;
-    }
-    .form-row {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-    .input-group {
-      flex: 1;
-      min-width: 180px;
-    }
-    .full-width {
+    .gradient-border {
+      background: linear-gradient(90deg, #f97316, #ffb347);
+      height: 2px;
       width: 100%;
     }
-    label {
-      display: block;
-      font-weight: 500;
-      font-size: 0.8rem;
-      margin-bottom: 6px;
-      color: #2c5a7a;
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #ffe6d5; border-radius: 10px; }
+    ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 10px; }
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
     }
-    body.dark-mode label {
-      color: #b9c9e5;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 12px 16px;
-      border-radius: 20px;
-      border: 1px solid #cbdde9;
-      background: white;
-      font-size: 0.9rem;
-      outline: none;
-    }
-    body.dark-mode input, body.dark-mode select, body.dark-mode textarea {
-      background: #0f172a;
-      border-color: #334155;
-      color: #f1f5f9;
-    }
-    .btn-primary {
-      background: #1f6392;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 40px;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    /* filter bar */
-    .filter-bar {
-      background: white;
-      border-radius: 28px;
-      padding: 20px 28px;
-      margin-bottom: 28px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 28px;
-      border: 1px solid #e2edf7;
-    }
-    body.dark-mode .filter-bar {
-      background: #1e293b;
-      border-color: #334155;
-    }
-    .search-box, .filter-box {
-      flex: 1;
-      min-width: 200px;
-    }
-    .search-box input, .filter-box select {
-      margin-top: 6px;
-    }
-
-    /* feed */
-    .feed-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin: 16px 8px 20px 8px;
-    }
-    .entry-count {
-      background: #e2eaf5;
-      padding: 4px 14px;
-      border-radius: 40px;
-      font-size: 0.8rem;
-      font-weight: 500;
-    }
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-      gap: 24px;
-    }
-    .card-item {
-      background: white;
-      border-radius: 28px;
-      padding: 1.4rem;
-      border: 1px solid #eef2f8;
-      transition: 0.1s;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-    }
-    body.dark-mode .card-item {
-      background: #1e293b;
-      border-color: #334155;
-    }
-    .company-name {
-      font-weight: 800;
-      font-size: 1.25rem;
-      color: #0f2e45;
-    }
-    body.dark-mode .company-name {
-      color: #e0edff;
-    }
-    .leader-name {
-      font-size: 0.85rem;
-      color: #4b6a8c;
-      margin: 6px 0 10px 0;
-    }
-    .platform-badge {
-      background: #eef2ff;
-      padding: 4px 14px;
-      border-radius: 50px;
-      font-size: 0.7rem;
-      font-weight: 700;
-      display: inline-block;
-    }
-    .post-link {
-      margin: 14px 0;
-      word-break: break-all;
-    }
-    .post-link a {
-      color: #2c7da0;
-      text-decoration: none;
-      font-weight: 500;
-    }
-    .notes {
-      background: #f8fafd;
-      padding: 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      margin: 12px 0;
-    }
-    body.dark-mode .notes {
-      background: #0f172a;
-    }
-    .delete-btn {
-      background: none;
-      border: 1px solid #e2e8f0;
-      padding: 6px 18px;
-      border-radius: 40px;
-      color: #b91c1c;
-      cursor: pointer;
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-    .delete-btn:hover {
-      background: #fee2e2;
-    }
-    .empty-state {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 48px;
-      background: #ffffffaa;
-      border-radius: 48px;
-      color: #4f6f8f;
-    }
-    body.dark-mode .empty-state {
-      background: #1e293b80;
-    }
-    @media (max-width: 680px) {
-      body { padding: 20px 16px; }
-      .form-row { flex-direction: column; gap: 12px; }
-    }
-    .info-note {
-      background: #eef2ff;
-      border-radius: 16px;
-      padding: 12px 20px;
-      margin-bottom: 20px;
-      font-size: 0.85rem;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    body.dark-mode .info-note {
-      background: #1e293b;
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+      100% { transform: translateY(0px); }
     }
   </style>
 </head>
 <body>
-<div class="app-container">
-  <header class="dashboard-header">
-    <div>
-      <h1>📊 ExecWatch – Logistics MD Activity Monitor</h1>
-      <p class="subhead">Track CEO/MD posts from Pakistan's leading logistics companies</p>
-    </div>
-    <button id="darkModeToggle" class="dark-toggle">🌙 Dark mode</button>
-  </header>
 
-  <!-- Info note about live data -->
-  <div class="info-note">
-    <span>ℹ️</span> 
-    <span><strong>How this works:</strong> Due to social media API restrictions (LinkedIn, X, Facebook require authentication and backend), live data cannot be auto-fetched in a pure frontend app. This dashboard is pre-loaded with 23 realistic posts from the logistics industry. You can <strong>manually add</strong> new posts using the form below, and all data persists in your browser's localStorage.</span>
-  </div>
-
-  <div class="stats-panel">
-    <div class="stat-card">
-      <span class="stat-label">Total tracked posts</span>
-      <span class="stat-number" id="totalCount">0</span>
-    </div>
-    <div class="platform-stats" id="platformStats"></div>
-  </div>
-
-  <!-- Manual add form (so user can add live updates when they see them) -->
-  <div class="form-card">
-    <h2 style="margin-bottom: 16px;">➕ Manually add competitor post</h2>
-    <form id="addCompetitorForm">
-      <div class="form-row">
-        <div class="input-group">
-          <label>Company name *</label>
-          <input type="text" id="companyName" placeholder="e.g., Trax Logistics" required>
+  <div class="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-10 py-8 md:py-10">
+    
+    <!-- Modern Header with Orange Accent & Floating Icon -->
+    <div class="flex flex-wrap justify-between items-center gap-5 mb-10 pb-2 relative">
+      <div class="flex items-center gap-4">
+        <div class="orange-glow w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl animate-float">
+          <i class="fas fa-microchip text-white text-2xl"></i>
         </div>
-        <div class="input-group">
-          <label>MD / CEO name *</label>
-          <input type="text" id="leaderName" placeholder="e.g., Muhammad Hassan Khan" required>
+        <div>
+          <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-orange-700 to-orange-500 bg-clip-text text-transparent">M&P TECH</h1>
+          <p class="text-gray-500 text-sm font-medium mt-0.5">Neo Intelligence • Real-time Ops • Instant IT Response</p>
         </div>
       </div>
-      <div class="form-row">
-        <div class="input-group">
-          <label>Platform *</label>
-          <select id="platformSelect" required>
-            <option value="">-- Select platform --</option>
-            <option value="LinkedIn">LinkedIn</option>
-            <option value="Facebook">Facebook</option>
-            <option value="X">X (Twitter)</option>
-            <option value="Instagram">Instagram</option>
-          </select>
-        </div>
-        <div class="input-group">
-          <label>Post link (URL) *</label>
-          <input type="url" id="postLink" placeholder="https://linkedin.com/..." required>
-        </div>
+      <div class="flex gap-3">
+        <button id="adminLoginBtn" class="bg-white/70 backdrop-blur-sm border border-orange-300 hover:border-orange-500 text-gray-700 hover:text-orange-700 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm transition-all duration-200"><i class="fas fa-shield-alt"></i> Admin</button>
+        <button id="adminLogoutBtn" class="hidden bg-gray-800/90 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-gray-900 transition-all"><i class="fas fa-sign-out-alt"></i> Exit</button>
       </div>
-      <div class="input-group full-width">
-        <label>Notes (key insights from post) *</label>
-        <textarea id="notes" rows="2" placeholder="What did they announce? Strategic moves, expansions, partnerships..." required></textarea>
-      </div>
-      <button type="submit" class="btn-primary">+ Add to dashboard</button>
-    </form>
-  </div>
-
-  <div class="filter-bar">
-    <div class="search-box">
-      <label>🔍 Search by company name</label>
-      <input type="text" id="searchInput" placeholder="e.g., Trax, TCS, Leopards..." autocomplete="off">
     </div>
-    <div class="filter-box">
-      <label>📌 Filter by platform</label>
-      <select id="platformFilter">
-        <option value="all">All platforms</option>
-      </select>
-    </div>
-  </div>
 
-  <div class="feed-header">
-    <h2>📋 Competitor MD activity feed</h2>
-    <span class="entry-count" id="feedCountInfo">0 items</span>
-  </div>
-  <div id="feedContainer" class="cards-grid"></div>
-</div>
-
-<script>
-  // ---------- DATA STORAGE ----------
-  let competitors = [];
-
-  // ---------- REALISTIC MOCK DATA (Logistics Industry) ----------
-  // Based on actual leadership info from search results:
-  // Trax: Muhammad Hassan Khan (CEO/COO), Waqas Ahmed Dar (Co-founder)
-  // TCS: Tanveer Zehra (CEO), Qasim Awan (Executive Director), Khalid Nawaz Awan (Chairman)
-  // Leopards: Rizwan Saadat (CEO), Jehangir Shahid (Founder/Chairman)
-  // BlueEx: Imran Baxamoosa (CEO)
-  // Burqraftar: (leadership info not publicly available)
-  // Tranzo: Umair Arshad (Co-founder)
-  // Insta Logistics: (public info limited, using placeholder)
-  
-  const MOCK_DATA = [
-    // TRAX LOGISTICS
-    { company: "Trax Logistics", leader: "Muhammad Hassan Khan (CEO)", platform: "LinkedIn", link: "https://www.linkedin.com/company/trax", notes: "Trax becomes first startup to merge and evolve into a publicly listed company on PSX. Management control retained." },
-    { company: "Trax Logistics", leader: "Waqas Ahmed Dar (Co-founder & GM)", platform: "LinkedIn", link: "https://www.linkedin.com/in/waqasahmeddar/", notes: "Announced major milestone: Trax listed on Pakistan Stock Exchange. Alhamdulillah for the journey!" },
-    { company: "Trax Logistics", leader: "Muhammad Hassan Khan", platform: "LinkedIn", link: "https://www.linkedin.com/company/trax", notes: "Leading e-commerce logistics automation in Pakistan. Focus on innovation and growth." },
-    // TCS PAKISTAN
-    { company: "TCS", leader: "Tanveer Zehra (CEO)", platform: "LinkedIn", link: "https://www.tcs.com.pk", notes: "TCS continues to lead Pakistan's courier and logistics industry with 900+ outlets in 380 cities." },
-    { company: "TCS", leader: "Qasim Awan (Executive Director & MD TCS Ecom)", platform: "LinkedIn", link: "https://www.linkedin.com/in/qasim-awan/", notes: "Hands-on leadership driving TCS to forefront of e-commerce logistics. Travels nationwide to connect with teams." },
-    { company: "TCS", leader: "Khalid Nawaz Awan (Chairman)", platform: "LinkedIn", link: "https://www.tcs.com.pk", notes: "TCS Holdings success story featured at Harvard. Leading with vision for Pakistan's logistics." },
-    { company: "TCS", leader: "Saira Awan Malik (President)", platform: "LinkedIn", link: "https://www.linkedin.com/in/saira-awan-malik/", notes: "Shared insights on Pakistan's economic progress at Dialogue on Economy 2025." },
-    // LEOPARDS COURIER
-    { company: "Leopards Courier", leader: "Rizwan Saadat (CEO)", platform: "LinkedIn", link: "https://www.leopards.com.pk", notes: "Record-breaking mango crate sales achieved with Hyderabad zone. Congratulations to marketing team!" },
-    { company: "Leopards Courier", leader: "Jehangir Shahid (Founder & Chairman)", platform: "LinkedIn", link: "https://www.leopards.com.pk", notes: "Celebrating birthday of the father of modern-day Courier & Logistics Industry in Pakistan." },
-    { company: "Leopards Courier", leader: "Rizwan Saadat (CEO)", platform: "LinkedIn", link: "https://www.leopards.com.pk", notes: "Central sales team reached record-breaking sales milestone this month." },
-    // BLUEEX
-    { company: "BlueEx", leader: "Imran Baxamoosa (CEO)", platform: "LinkedIn", link: "https://www.blue-ex.com", notes: "First company to offer Cash on Delivery services across Pakistan. 30+ years of family experience in logistics." },
-    { company: "BlueEx", leader: "Imran Baxamoosa (CEO)", platform: "LinkedIn", link: "https://www.blue-ex.com", notes: "Partnership with PayPro to offer digital payment solutions to customers. Step forward in business transformation." },
-    { company: "BlueEx", leader: "Imran Baxamoosa (CEO)", platform: "LinkedIn", link: "https://www.blue-ex.com", notes: "Expanding e-commerce logistics network across Pakistan. Focus on retail and last-mile delivery." },
-    // BURQRAFTAR (leadership info not publicly found - using placeholder with company focus)
-    { company: "Burqraftar", leader: "CEO (name not public)", platform: "LinkedIn", link: "https://burqraftar.com", notes: "Focusing on innovative logistics solutions in Pakistan's growing e-commerce sector." },
-    { company: "Burqraftar", leader: "Executive Leadership", platform: "Facebook", link: "https://www.facebook.com/burqraftar", notes: "Expanding delivery network to serve more cities across Pakistan." },
-    // TRANZO
-    { company: "Tranzo", leader: "Umair Arshad (Co-founder)", platform: "LinkedIn", link: "https://tranzo.com.pk", notes: "Received appreciation from Startup Grind for innovation in logistics tech. Building smart transport platform." },
-    { company: "Tranzo", leader: "Jamshed Akhtar Awan (Head of Operations)", platform: "LinkedIn", link: "https://tranzo.com.pk", notes: "Integrating AI and cloud tech for intelligent commercial vehicle booking." },
-    // INSTA LOGISTICS
-    { company: "Insta Logistics", leader: "CEO / Founder", platform: "LinkedIn", link: "https://instalogistics.pk", notes: "Pakistan's fastest growing last-mile delivery network. Expanding operations in major cities." },
-    { company: "Insta Logistics", leader: "Senior Leadership", platform: "Facebook", link: "https://www.facebook.com/instalogistics", notes: "New partnerships with e-commerce platforms to enhance delivery speed." },
-    // Additional realistic posts to make feed rich
-    { company: "Trax Logistics", leader: "Waqas Ahmed Dar", platform: "LinkedIn", link: "https://www.linkedin.com/in/waqasahmeddar/", notes: "Leadership insight: 'Leadership only exists if people follow when they have the freedom not to follow.'" },
-    { company: "TCS", leader: "Khalid Nawaz Awan", platform: "LinkedIn", link: "https://www.tcs.com.pk", notes: "TCS not more expensive than Pakistan Post across product range. Committed to affordable logistics." },
-    { company: "Leopards Courier", leader: "Muhammad Aftab Nehal (CIO)", platform: "LinkedIn", link: "https://www.linkedin.com/in/muhammad-aftab-nehal/", notes: "CxO Talk interview discussing digital transformation at Leopards Courier Services." },
-    { company: "BlueEx", leader: "Ali Aamer Baxamoosa (CSO)", platform: "LinkedIn", link: "https://www.blue-ex.com", notes: "Strategic expansion plans for BlueEx in the e-commerce logistics sector." }
-  ];
-
-  // Load from localStorage
-  function loadFromLocal() {
-    const stored = localStorage.getItem('execwatch_competitors_logistics');
-    if (stored) {
-      competitors = JSON.parse(stored);
-    } else {
-      // Initialize with mock data
-      competitors = MOCK_DATA.map((item, idx) => ({
-        id: Date.now() + idx + Math.random() * 10000,
-        company: item.company,
-        leader: item.leader,
-        platform: item.platform,
-        link: item.link,
-        notes: item.notes
-      }));
-      saveToLocal();
-    }
-    refreshAll();
-  }
-
-  function saveToLocal() {
-    localStorage.setItem('execwatch_competitors_logistics', JSON.stringify(competitors));
-  }
-
-  // Add manual entry
-  function addManualEntry(entry) {
-    const newEntry = {
-      id: Date.now() + Math.random() * 10000,
-      company: entry.company.trim(),
-      leader: entry.leader.trim(),
-      platform: entry.platform,
-      link: entry.link.trim(),
-      notes: entry.notes.trim()
-    };
-    competitors.unshift(newEntry); // newest first
-    saveToLocal();
-    refreshAll();
-  }
-
-  // Delete
-  function deleteCompetitor(id) {
-    competitors = competitors.filter(c => c.id != id);
-    saveToLocal();
-    refreshAll();
-  }
-
-  // ---------- SEARCH & FILTER ----------
-  function getFilteredCompetitors() {
-    let filtered = [...competitors];
-    const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
-    if (searchTerm !== "") {
-      filtered = filtered.filter(item => item.company.toLowerCase().includes(searchTerm));
-    }
-    const platformVal = document.getElementById('platformFilter').value;
-    if (platformVal && platformVal !== 'all') {
-      filtered = filtered.filter(item => item.platform === platformVal);
-    }
-    return filtered;
-  }
-
-  function renderFeed() {
-    const filtered = getFilteredCompetitors();
-    const container = document.getElementById('feedContainer');
-    const countSpan = document.getElementById('feedCountInfo');
-    countSpan.innerText = `${filtered.length} item${filtered.length !== 1 ? 's' : ''}`;
-
-    if (filtered.length === 0) {
-      container.innerHTML = `<div class="empty-state">🔍 No matching competitor posts. Try a different search term or <strong>add a new post</strong> using the form above.</div>`;
-      return;
-    }
-
-    container.innerHTML = filtered.map(item => `
-      <div class="card-item">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-          <div>
-            <div class="company-name">${escapeHtml(item.company)}</div>
-            <div class="leader-name">👤 ${escapeHtml(item.leader)}</div>
+    <!-- USER VIEW (Modern Glass Cards) -->
+    <div id="userView">
+      <!-- News Feed with modern grid -->
+      <div class="mb-14">
+        <div class="flex flex-wrap justify-between items-center mb-6">
+          <div class="flex items-center gap-3">
+            <div class="bg-orange-100 p-2 rounded-xl"><i class="fas fa-rss text-orange-500 text-xl"></i></div>
+            <h2 class="text-2xl font-bold text-gray-800">Live<span class="text-orange-500"> Intelligence</span></h2>
+            <span class="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full font-mono">Live Feeds</span>
           </div>
-          <span class="platform-badge">${escapeHtml(item.platform)}</span>
+          <button id="refreshUserNews" class="text-sm bg-white/70 backdrop-blur border border-orange-200 px-4 py-2 rounded-xl shadow-sm hover:bg-orange-50 transition flex items-center gap-2"><i class="fas fa-sync-alt text-orange-500"></i> Refresh</button>
         </div>
-        <div class="post-link">🔗 <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer">View post</a></div>
-        <div class="notes">📝 ${escapeHtml(item.notes || '— No additional notes —')}</div>
-        <button class="delete-btn" data-id="${item.id}">🗑 Remove</button>
+        <div id="newsFeedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7">
+          <div class="col-span-full text-center py-12"><i class="fas fa-spinner fa-pulse text-orange-500 text-3xl"></i><p class="mt-3 text-gray-500">Loading neural feeds...</p></div>
+        </div>
       </div>
-    `).join('');
 
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = Number(btn.getAttribute('data-id'));
-        deleteCompetitor(id);
-      });
-    });
-  }
+      <!-- IT Team - Modern avatar cards -->
+      <div class="mb-14">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="bg-orange-100 p-2 rounded-xl"><i class="fas fa-users text-orange-500 text-xl"></i></div>
+          <h2 class="text-2xl font-bold text-gray-800">IT<span class="text-orange-500"> Command</span></h2>
+        </div>
+        <div id="itTeamContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
+          <!-- dynamic injected -->
+        </div>
+      </div>
 
-  function updatePlatformFilterOptions() {
-    const platformsSet = new Set(competitors.map(c => c.platform));
-    const filterSelect = document.getElementById('platformFilter');
-    const currentVal = filterSelect.value;
-    let options = '<option value="all">All platforms</option>';
-    Array.from(platformsSet).sort().forEach(plat => {
-      options += `<option value="${escapeHtml(plat)}">${escapeHtml(plat)}</option>`;
-    });
-    filterSelect.innerHTML = options;
-    if (currentVal !== 'all' && platformsSet.has(currentVal)) {
-      filterSelect.value = currentVal;
-    } else {
-      filterSelect.value = 'all';
+      <!-- Incident Desk - Glassmorphic with WhatsApp -->
+      <div class="max-w-2xl mx-auto mt-8 mb-10">
+        <div class="glass-modern rounded-2xl shadow-2xl overflow-hidden transition-all">
+          <div class="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 flex items-center gap-3">
+            <div class="bg-green-500/20 p-2.5 rounded-full"><i class="fab fa-whatsapp text-green-400 text-2xl"></i></div>
+            <div><h3 class="text-white font-bold text-xl">IT Incident Desk</h3><p class="text-gray-300 text-sm">24/7 Critical Support • WhatsApp Bridge</p></div>
+          </div>
+          <div class="p-7 text-center">
+            <p class="text-gray-600 mb-5 leading-relaxed">Report any system failure, production IT issue, or network anomaly. Our on-call engineer responds instantly.</p>
+            <button id="globalComplaintBtn" class="whatsapp-neon w-full sm:w-auto px-8 py-3.5 rounded-xl text-white font-bold text-lg shadow-md flex items-center justify-center gap-3 transition-all hover:scale-[1.02]"><i class="fab fa-whatsapp text-2xl"></i> Register Emergency Complaint</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN PANEL (Ultra-modern with gradients) -->
+    <div id="adminPanel" class="hidden mt-12 rounded-2xl admin-panel-glow shadow-2xl border border-orange-100 overflow-hidden">
+      <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-orange-200 flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center gap-2"><i class="fas fa-crown text-orange-600 text-xl"></i><h2 class="text-2xl font-bold text-orange-800">Control Core</h2></div>
+        <span class="text-xs bg-orange-200 text-orange-800 px-3 py-1 rounded-full font-mono">🔐 Admin Access</span>
+      </div>
+      <div class="p-6 md:p-8 space-y-10">
+        <!-- News Management -->
+        <div class="bg-white rounded-xl shadow-sm border border-orange-100 p-6">
+          <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-newspaper text-orange-500"></i> Manage News Stream</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <input type="text" id="newsTitle" placeholder="Headline *" class="border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-orange-200 outline-none transition">
+            <input type="text" id="newsSource" placeholder="Source *" class="border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-orange-200 outline-none">
+            <textarea id="newsDesc" rows="2" placeholder="Description *" class="border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-orange-200 outline-none"></textarea>
+            <div class="flex gap-3">
+              <input type="date" id="newsDate" class="border border-gray-200 rounded-xl px-4 py-2.5 flex-1">
+              <select id="newsIcon" class="border border-gray-200 rounded-xl px-3 py-2.5 bg-white">
+                <option value="fa-microchip">Chip</option><option value="fa-chart-line">Analytics</option><option value="fa-wifi">Network</option>
+                <option value="fa-shield-haltered">Security</option><option value="fa-database">Data</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex gap-3 mb-6">
+            <button id="addNewsBtn" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm transition"><i class="fas fa-plus"></i> Publish</button>
+            <button id="resetNewsFormBtn" class="border border-gray-300 px-5 rounded-xl hover:bg-gray-50">Clear</button>
+          </div>
+          <div><label class="font-medium text-gray-700 text-sm">📰 Active Articles</label><div id="adminNewsList" class="mt-3 space-y-2 max-h-80 overflow-y-auto pr-1"></div></div>
+        </div>
+
+        <!-- IT Team Management -->
+        <div class="bg-white rounded-xl shadow-sm border border-orange-100 p-6">
+          <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-user-tie text-orange-500"></i> IT Leadership Directory</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <input type="text" id="teamName" placeholder="Full Name *" class="border border-gray-200 rounded-xl px-4 py-2.5">
+            <input type="text" id="teamDesignation" placeholder="Designation *" class="border border-gray-200 rounded-xl px-4 py-2.5">
+            <input type="text" id="teamContact" placeholder="WhatsApp Number *" class="border border-gray-200 rounded-xl px-4 py-2.5">
+            <input type="text" id="teamImageUrl" placeholder="Image URL (optional)" class="border border-gray-200 rounded-xl px-4 py-2.5">
+            <button id="addTeamBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-2.5 font-semibold flex items-center justify-center gap-2"><i class="fas fa-user-plus"></i> Add Member</button>
+            <button id="resetTeamFormBtn" class="border border-gray-300 rounded-xl px-5 py-2.5 hover:bg-gray-50">Reset</button>
+          </div>
+          <div><label class="font-medium text-gray-700 text-sm">👥 Team Roster</label><div id="adminTeamList" class="mt-3 grid sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Modern glass complaint -->
+  <div id="complaintModal" class="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300 opacity-0 invisible">
+    <div class="bg-white w-full max-w-lg mx-4 rounded-2xl shadow-2xl transform transition-all">
+      <div class="flex justify-between items-center border-b px-6 py-4"><h3 class="text-2xl font-bold flex gap-2"><i class="fab fa-whatsapp text-green-500"></i> IT Incident Report</h3><button id="closeModalBtn" class="text-gray-400 text-3xl leading-5">&times;</button></div>
+      <div class="p-6 space-y-5">
+        <input type="text" id="complaintName" placeholder="Your Full Name *" class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-orange-300">
+        <input type="text" id="complaintDept" placeholder="Department / Line" class="w-full border border-gray-300 rounded-xl px-4 py-3">
+        <textarea id="complaintDesc" rows="3" placeholder="Describe the technical issue *" class="w-full border border-gray-300 rounded-xl px-4 py-3"></textarea>
+        <p class="text-xs text-gray-400"><i class="fas fa-lock"></i> Encrypted → Engineer's WhatsApp</p>
+      </div>
+      <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3"><button id="cancelModalBtn" class="px-5 py-2 border rounded-xl">Cancel</button><button id="sendComplaintBtn" class="bg-green-600 text-white px-6 py-2 rounded-xl font-bold flex gap-2"><i class="fab fa-whatsapp"></i> Send to Engineer</button></div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- STORAGE & DEFAULTS ----------
+    const STORAGE = { NEWS: 'mp_tech_news_v2', TEAM: 'mp_team_orange_v2' };
+    const DEFAULT_IT_ENGINEER = "923219876543"; // 🔁 Replace with actual IT Engineer WhatsApp number (country code without +)
+
+    const defaultNews = [
+      { id: "n1", title: "🚀 Edge AI Predictive Module", description: "Real-time anomaly detection deployed across all production lines.", date: "2025-05-18", source: "AI Lab", icon: "fa-microchip" },
+      { id: "n2", title: "⚡ 99.5% Uptime Achieved", description: "IT infrastructure upgrades drive record reliability.", date: "2025-05-17", source: "Operations", icon: "fa-chart-line" },
+      { id: "n3", title: "🔐 ZTNA Implementation", description: "Zero Trust Network Access now active for all M&P endpoints.", date: "2025-05-15", source: "CyberSec", icon: "fa-shield-haltered" },
+      { id: "n4", title: "📊 Real-time OEE Dashboard", description: "Live equipment effectiveness tracking with predictive alerts.", date: "2025-05-14", source: "ERP", icon: "fa-database" }
+    ];
+    const defaultTeam = [
+      { id: "t1", name: "Dr. Imran Ashraf", designation: "HOD IT (Digital Transformation)", contact: "923001112233", imageUrl: "", avatarIcon: "fa-user-circle" },
+      { id: "t2", name: "Ms. Sarah Khan", designation: "Manager IT - Infrastructure", contact: "923004445566", imageUrl: "", avatarIcon: "fa-user-circle" },
+      { id: "t3", name: "Mr. Raza Hasan", designation: "AM IT - Industrial Systems", contact: "923007778899", imageUrl: "", avatarIcon: "fa-user-circle" },
+      { id: "t4", name: "Engr. Bilal Tariq", designation: "IT Support Lead", contact: "923009988776", imageUrl: "", avatarIcon: "fa-user-circle" }
+    ];
+
+    function loadNews() { return JSON.parse(localStorage.getItem(STORAGE.NEWS) || JSON.stringify(defaultNews)); }
+    function saveNews(data) { localStorage.setItem(STORAGE.NEWS, JSON.stringify(data)); }
+    function loadTeam() { return JSON.parse(localStorage.getItem(STORAGE.TEAM) || JSON.stringify(defaultTeam)); }
+    function saveTeam(data) { localStorage.setItem(STORAGE.TEAM, JSON.stringify(data)); }
+
+    // RENDER USER VIEW with modern cards
+    function renderNewsFeed() {
+      const container = document.getElementById('newsFeedContainer');
+      if (!container) return;
+      const allNews = loadNews();
+      if (!allNews.length) { container.innerHTML = '<div class="col-span-full text-center py-12 glass-modern rounded-2xl"><i class="fas fa-newspaper text-orange-300 text-5xl"></i><p class="mt-3">No news feeds</p></div>'; return; }
+      const sorted = [...allNews].sort((a,b)=>new Date(b.date)-new Date(a.date));
+      container.innerHTML = sorted.map(n => `
+        <div class="glass-modern rounded-2xl p-5 border border-orange-100 card-hover transition-all duration-300">
+          <div class="flex justify-between items-start"><div class="flex gap-2 items-center"><i class="fas ${n.icon || 'fa-rss'} text-orange-500 bg-orange-100 p-2.5 rounded-full text-sm"></i><span class="text-xs font-semibold text-gray-500 uppercase tracking-wide">${n.source}</span></div><span class="text-xs text-gray-400 bg-white/50 px-2 py-1 rounded-full">${n.date}</span></div>
+          <h3 class="font-bold text-gray-800 text-lg mt-3 leading-tight">${n.title}</h3>
+          <p class="text-gray-600 text-sm mt-2 leading-relaxed">${n.description}</p>
+          <div class="mt-4 flex items-center text-orange-500 text-xs gap-1"><i class="fas fa-waveform"></i> ${n.id}</div>
+        </div>
+      `).join('');
     }
-  }
 
-  function updateStats() {
-    document.getElementById('totalCount').innerText = competitors.length;
-    const platMap = new Map();
-    competitors.forEach(c => {
-      platMap.set(c.platform, (platMap.get(c.platform) || 0) + 1);
-    });
-    let platHtml = '';
-    for (let [plat, count] of platMap.entries()) {
-      platHtml += `<span class="plat-badge-sm">${escapeHtml(plat)}: ${count}</span>`;
+    function renderITTeam() {
+      const container = document.getElementById('itTeamContainer');
+      if (!container) return;
+      const team = loadTeam();
+      if (!team.length) { container.innerHTML = '<div class="col-span-full text-center py-10 glass-modern">No team members</div>'; return; }
+      container.innerHTML = team.map(m => {
+        const imgUrl = m.imageUrl && m.imageUrl.trim() ? m.imageUrl : `https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true`;
+        return `
+          <div class="glass-modern rounded-2xl overflow-hidden border border-orange-100 shadow-md card-hover transition-all p-5 text-center">
+            <img src="${imgUrl}" onerror="this.src='https://ui-avatars.com/api/?background=f97316&color=fff&name=${m.name.charAt(0)}'" class="w-28 h-28 rounded-full mx-auto object-cover border-4 border-orange-200 shadow-md">
+            <h3 class="font-bold text-xl mt-4 text-gray-800">${m.name}</h3>
+            <p class="text-orange-600 font-medium text-sm">${m.designation}</p>
+            <p class="text-gray-400 text-xs mt-1 font-mono">${m.contact}</p>
+            <a href="https://wa.me/${m.contact}?text=Hello%20${encodeURIComponent(m.name)}%2C%20IT%20support%20required%20from%20M%26P%20TECH" target="_blank" class="inline-flex items-center gap-2 mt-4 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition shadow-md"><i class="fab fa-whatsapp"></i> Direct Chat</a>
+          </div>
+        `;
+      }).join('');
     }
-    if (competitors.length === 0) platHtml = '<span class="plat-badge-sm">No data</span>';
-    document.getElementById('platformStats').innerHTML = platHtml;
-  }
 
-  function refreshAll() {
-    updateStats();
-    updatePlatformFilterOptions();
-    renderFeed();
-  }
-
-  function escapeHtml(str) {
-    if (!str) return '';
-    return str.replace(/[&<>]/g, function(m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
-    });
-  }
-
-  // ---------- FORM HANDLER ----------
-  document.getElementById('addCompetitorForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const company = document.getElementById('companyName').value.trim();
-    const leader = document.getElementById('leaderName').value.trim();
-    const platform = document.getElementById('platformSelect').value;
-    const link = document.getElementById('postLink').value.trim();
-    const notes = document.getElementById('notes').value.trim();
-
-    if (!company || !leader || !platform || !link || !notes) {
-      alert('Please fill all fields: Company, Leader, Platform, Post link, and Notes.');
-      return;
+    // Admin management
+    let editNewsId = null, editTeamId = null;
+    function renderAdminNewsList() {
+      const container = document.getElementById('adminNewsList');
+      if (!container) return;
+      const items = loadNews();
+      if (!items.length) { container.innerHTML = '<div class="text-gray-400 text-center p-4">No articles</div>'; return; }
+      container.innerHTML = items.map(n => `
+        <div class="bg-orange-50/50 rounded-xl p-3 flex justify-between items-center gap-3 border border-orange-100">
+          <div><div class="font-semibold">${n.title}</div><div class="text-xs text-gray-500">${n.source} · ${n.date}</div></div>
+          <div class="flex gap-2"><button class="editNewsBtn bg-white border border-orange-300 text-orange-700 px-3 py-1 rounded-lg text-sm" data-id="${n.id}"><i class="fas fa-pen"></i></button><button class="deleteNewsBtn bg-white border border-red-200 text-red-600 px-3 py-1 rounded-lg text-sm" data-id="${n.id}"><i class="fas fa-trash"></i></button></div>
+        </div>
+      `).join('');
+      document.querySelectorAll('.editNewsBtn').forEach(btn => btn.addEventListener('click', () => { const id = btn.dataset.id; const news = loadNews().find(i=>i.id===id); if(news){ document.getElementById('newsTitle').value=news.title; document.getElementById('newsDesc').value=news.description; document.getElementById('newsSource').value=news.source; document.getElementById('newsDate').value=news.date; document.getElementById('newsIcon').value=news.icon; editNewsId=id; document.getElementById('addNewsBtn').innerHTML='<i class="fas fa-save"></i> Update'; } }));
+      document.querySelectorAll('.deleteNewsBtn').forEach(btn => btn.addEventListener('click', () => { if(confirm('Delete news?')){ let arr = loadNews(); arr = arr.filter(i=>i.id!==btn.dataset.id); saveNews(arr); renderAdminNewsList(); renderNewsFeed(); if(editNewsId===btn.dataset.id) resetNewsForm(); } }));
     }
-    if (!link.match(/^https?:\/\//i)) {
-      alert('Please enter a valid URL starting with http:// or https://');
-      return;
+    function resetNewsForm() { document.getElementById('newsTitle').value=''; document.getElementById('newsDesc').value=''; document.getElementById('newsSource').value=''; document.getElementById('newsDate').value=''; document.getElementById('newsIcon').value='fa-microchip'; editNewsId=null; document.getElementById('addNewsBtn').innerHTML='<i class="fas fa-plus"></i> Publish'; }
+
+    function renderAdminTeamList() {
+      const container = document.getElementById('adminTeamList');
+      if (!container) return;
+      const team = loadTeam();
+      if (!team.length) { container.innerHTML = '<div class="text-gray-400 col-span-full">No members</div>'; return; }
+      container.innerHTML = team.map(m => `
+        <div class="bg-orange-50/50 rounded-xl p-3 flex justify-between items-center gap-2 border border-orange-100">
+          <div><div class="font-medium">${m.name}</div><div class="text-xs text-gray-500">${m.designation} | ${m.contact}</div></div>
+          <div class="flex gap-2"><button class="editTeamBtn bg-white border border-orange-300 text-orange-700 px-3 py-1 rounded-lg text-sm" data-id="${m.id}"><i class="fas fa-edit"></i></button><button class="deleteTeamBtn bg-white border border-red-200 text-red-600 px-3 py-1 rounded-lg text-sm" data-id="${m.id}"><i class="fas fa-trash"></i></button></div>
+        </div>
+      `).join('');
+      document.querySelectorAll('.editTeamBtn').forEach(btn => btn.addEventListener('click', () => { const id = btn.dataset.id; const member = loadTeam().find(t=>t.id===id); if(member){ document.getElementById('teamName').value=member.name; document.getElementById('teamDesignation').value=member.designation; document.getElementById('teamContact').value=member.contact; document.getElementById('teamImageUrl').value=member.imageUrl||''; editTeamId=id; document.getElementById('addTeamBtn').innerHTML='<i class="fas fa-save"></i> Update'; } }));
+      document.querySelectorAll('.deleteTeamBtn').forEach(btn => btn.addEventListener('click', () => { if(confirm('Remove member?')){ let arr = loadTeam(); arr = arr.filter(t=>t.id!==btn.dataset.id); saveTeam(arr); renderAdminTeamList(); renderITTeam(); if(editTeamId===btn.dataset.id) resetTeamForm(); } }));
     }
-    addManualEntry({ company, leader, platform, link, notes });
-    // Reset form
-    document.getElementById('companyName').value = '';
-    document.getElementById('leaderName').value = '';
-    document.getElementById('platformSelect').value = '';
-    document.getElementById('postLink').value = '';
-    document.getElementById('notes').value = '';
-  });
+    function resetTeamForm() { document.getElementById('teamName').value=''; document.getElementById('teamDesignation').value=''; document.getElementById('teamContact').value=''; document.getElementById('teamImageUrl').value=''; editTeamId=null; document.getElementById('addTeamBtn').innerHTML='<i class="fas fa-user-plus"></i> Add Member'; }
 
-  // Search & filter event listeners
-  document.getElementById('searchInput').addEventListener('input', () => renderFeed());
-  document.getElementById('platformFilter').addEventListener('change', () => renderFeed());
+    // Admin session
+    function isAdmin() { return sessionStorage.getItem('mp_admin')==='true'; }
+    function setAdmin(state) { if(state) sessionStorage.setItem('mp_admin','true'); else sessionStorage.removeItem('mp_admin'); updateAdminUI(); }
+    function updateAdminUI() { const logged=isAdmin(); const panel=document.getElementById('adminPanel'); const loginBtn=document.getElementById('adminLoginBtn'); const logoutBtn=document.getElementById('adminLogoutBtn'); if(logged){ panel.classList.remove('hidden'); loginBtn.classList.add('hidden'); logoutBtn.classList.remove('hidden'); renderAdminNewsList(); renderAdminTeamList(); } else { panel.classList.add('hidden'); loginBtn.classList.remove('hidden'); logoutBtn.classList.add('hidden'); resetNewsForm(); resetTeamForm(); } }
+    function promptAdmin(){ const pwd=prompt("Enter admin password:"); if(pwd==="admin123"){ setAdmin(true); alert("Admin access granted"); } else alert("Invalid"); }
 
-  // ---------- DARK MODE ----------
-  const darkToggleBtn = document.getElementById('darkModeToggle');
-  function initDarkMode() {
-    const isDark = localStorage.getItem('execwatch_theme_logistics') === 'dark';
-    if (isDark) {
-      document.body.classList.add('dark-mode');
-      darkToggleBtn.innerText = '☀️ Light mode';
-    } else {
-      document.body.classList.remove('dark-mode');
-      darkToggleBtn.innerText = '🌙 Dark mode';
-    }
-  }
-  darkToggleBtn.addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    const darkNow = document.body.classList.contains('dark-mode');
-    localStorage.setItem('execwatch_theme_logistics', darkNow ? 'dark' : 'light');
-    darkToggleBtn.innerText = darkNow ? '☀️ Light mode' : '🌙 Dark mode';
-  });
-  initDarkMode();
+    // Complaint Modal Logic
+    const modal=document.getElementById('complaintModal');
+    const openBtn=document.getElementById('globalComplaintBtn');
+    const closeBtn=document.getElementById('closeModalBtn'), cancel=document.getElementById('cancelModalBtn'), send=document.getElementById('sendComplaintBtn');
+    function openModal() { modal.classList.remove('opacity-0','invisible'); modal.classList.add('opacity-100','visible'); document.body.style.overflow='hidden'; }
+    function closeModalFn() { modal.classList.add('opacity-0','invisible'); modal.classList.remove('opacity-100','visible'); document.body.style.overflow=''; document.getElementById('complaintName').value=''; document.getElementById('complaintDept').value=''; document.getElementById('complaintDesc').value=''; }
+    function sendComplaintToEngineer() { const name=document.getElementById('complaintName').value.trim(); const dept=document.getElementById('complaintDept').value.trim(); const issue=document.getElementById('complaintDesc').value.trim(); if(!name||!issue){ alert("Please provide name and description"); return; } const ts=new Date().toLocaleString('en-PK'); const msg=`🔧 *M&P TECH INCIDENT* 🔧%0A*Reporter:* ${name}${dept?` (${dept})`:''}%0A*Time:* ${ts}%0A*Issue:* ${issue}%0A*System:* M&P Neo Portal`; window.open(`https://wa.me/${DEFAULT_IT_ENGINEER}?text=${encodeURIComponent(msg)}`,'_blank'); alert("WhatsApp will open. Send to notify engineer."); closeModalFn(); }
+    openBtn.addEventListener('click',openModal); closeBtn.addEventListener('click',closeModalFn); cancel.addEventListener('click',closeModalFn); send.addEventListener('click',sendComplaintToEngineer); modal.addEventListener('click',(e)=>{if(e.target===modal)closeModalFn();});
 
-  // Start
-  loadFromLocal();
-</script>
+    // Event Bindings
+    document.getElementById('adminLoginBtn').addEventListener('click',promptAdmin);
+    document.getElementById('adminLogoutBtn').addEventListener('click',()=>{setAdmin(false); location.reload();});
+    document.getElementById('addNewsBtn').addEventListener('click',()=>{ const title=document.getElementById('newsTitle').value.trim(), desc=document.getElementById('newsDesc').value.trim(), source=document.getElementById('newsSource').value.trim(), date=document.getElementById('newsDate').value, icon=document.getElementById('newsIcon').value; if(!title||!desc||!source||!date){alert("Complete all fields");return;} let news=loadNews(); if(editNewsId){ const idx=news.findIndex(n=>n.id===editNewsId); if(idx!==-1){ news[idx]={...news[idx],title,description:desc,source,date,icon}; saveNews(news); alert("Updated"); } resetNewsForm(); } else { news.push({id:'n'+Date.now(),title,description:desc,source,date,icon}); saveNews(news); alert("Published"); } renderNewsFeed(); renderAdminNewsList(); });
+    document.getElementById('resetNewsFormBtn')?.addEventListener('click',resetNewsForm);
+    document.getElementById('addTeamBtn').addEventListener('click',()=>{ const name=document.getElementById('teamName').value.trim(), desig=document.getElementById('teamDesignation').value.trim(), contact=document.getElementById('teamContact').value.trim(), img=document.getElementById('teamImageUrl').value.trim(); if(!name||!desig||!contact){alert("Fill all required fields");return;} let team=loadTeam(); if(editTeamId){ const idx=team.findIndex(t=>t.id===editTeamId); if(idx!==-1){ team[idx]={...team[idx],name,designation:desig,contact,imageUrl:img}; saveTeam(team); alert("Updated"); } resetTeamForm(); } else { team.push({id:'t'+Date.now(),name,designation:desig,contact,imageUrl:img}); saveTeam(team); alert("Member added"); } renderITTeam(); renderAdminTeamList(); });
+    document.getElementById('resetTeamFormBtn')?.addEventListener('click',resetTeamForm);
+    document.getElementById('refreshUserNews').addEventListener('click',()=>{ renderNewsFeed(); renderITTeam(); });
+
+    // Initial Render
+    renderNewsFeed();
+    renderITTeam();
+    updateAdminUI();
+    if(isAdmin()){ renderAdminNewsList(); renderAdminTeamList(); }
+  </script>
+  <div class="text-center text-xs text-gray-400 border-t border-orange-200 max-w-7xl mx-auto px-4 pb-6 pt-5 mt-3">
+    <i class="fas fa-bolt text-orange-500"></i> M&P TECH Neo Portal | Admin: <strong class="text-orange-600">admin123</strong> | 24/7 Incident Response
+  </div>
 </body>
 </html>
