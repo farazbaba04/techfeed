@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Firebase SDKs with Storage -->
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -31,36 +31,18 @@
     
     window.db = db;
     window.storage = storage;
-    window.newsCollection = collection(db, "news");
-    window.teamCollection = collection(db, "itTeam");
   </script>
   <style>
     * { font-family: 'Inter', sans-serif; }
-    body {
-      background: radial-gradient(circle at 10% 20%, rgba(255, 245, 235, 1) 0%, rgba(255, 235, 220, 1) 100%);
-    }
-    .glass-modern {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(249, 115, 22, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-    }
-    .orange-glow {
-      background: linear-gradient(135deg, #ff8c42, #ff5e00);
-      box-shadow: 0 8px 20px rgba(255, 94, 0, 0.25);
-    }
-    .card-hover { transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+    body { background: radial-gradient(circle at 10% 20%, #fff5eb 0%, #feebdd 100%); }
+    .glass-modern { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border: 1px solid rgba(249,115,22,0.2); }
+    .orange-glow { background: linear-gradient(135deg, #ff8c42, #ff5e00); }
+    .card-hover { transition: all 0.3s; }
     .card-hover:hover { transform: translateY(-6px); box-shadow: 0 25px 35px -12px rgba(249,115,22,0.25); }
-    .whatsapp-neon { background: linear-gradient(105deg, #25D366, #128C7E); box-shadow: 0 8px 18px rgba(37,211,102,0.3); }
-    .admin-panel-glow { background: rgba(255,255,255,0.97); backdrop-filter: blur(8px); border-left: 5px solid #f97316; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #ffe6d5; border-radius: 10px; }
-    ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 10px; }
-    .animate-float { animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
-    .loading-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; visibility: hidden; opacity: 0; transition: 0.2s; }
+    .whatsapp-neon { background: linear-gradient(105deg, #25D366, #128C7E); }
+    .admin-panel-glow { background: rgba(255,255,255,0.97); border-left: 5px solid #f97316; }
+    .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; visibility: hidden; opacity: 0; transition: 0.2s; }
     .loading-overlay.active { visibility: visible; opacity: 1; }
-    .image-preview { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #f97316; background: #fef3c7; }
   </style>
 </head>
 <body>
@@ -69,21 +51,15 @@
   <div class="bg-white p-4 rounded-2xl shadow-xl flex gap-3 items-center"><i class="fas fa-spinner fa-pulse text-orange-500 text-2xl"></i><span>Processing...</span></div>
 </div>
 
-<div class="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-10 py-8 md:py-10">
-  
+<div class="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-10 py-8">
   <!-- Header -->
-  <div class="flex flex-wrap justify-between items-center gap-5 mb-10 pb-2">
+  <div class="flex flex-wrap justify-between items-center gap-5 mb-10">
     <div class="flex items-center gap-4">
-      <div class="orange-glow w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl animate-float">
-        <i class="fas fa-microchip text-white text-2xl"></i>
-      </div>
-      <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-orange-700 to-orange-500 bg-clip-text text-transparent">M&P TECH</h1>
-        <p class="text-gray-500 text-sm">Cloud-Powered • Real-time Ops • IT Response</p>
-      </div>
+      <div class="orange-glow w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl animate-pulse"><i class="fas fa-microchip text-white text-2xl"></i></div>
+      <div><h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-orange-700 to-orange-500 bg-clip-text text-transparent">M&P TECH</h1><p class="text-gray-500 text-sm">Cloud-Powered • Real-time Ops • IT Response</p></div>
     </div>
     <div class="flex gap-3">
-      <button id="adminLoginBtn" class="bg-white/70 backdrop-blur-sm border border-orange-300 hover:border-orange-500 text-gray-700 hover:text-orange-700 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm"><i class="fas fa-shield-alt"></i> Admin</button>
+      <button id="adminLoginBtn" class="bg-white/70 border border-orange-300 hover:border-orange-500 text-gray-700 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2"><i class="fas fa-shield-alt"></i> Admin</button>
       <button id="adminLogoutBtn" class="hidden bg-gray-800/90 text-white px-5 py-2.5 rounded-xl text-sm font-semibold"><i class="fas fa-sign-out-alt"></i> Exit</button>
     </div>
   </div>
@@ -91,22 +67,19 @@
   <!-- USER VIEW -->
   <div id="userView">
     <div class="mb-14">
-      <div class="flex flex-wrap justify-between items-center mb-6">
-        <div class="flex items-center gap-3"><div class="bg-orange-100 p-2 rounded-xl"><i class="fas fa-rss text-orange-500 text-xl"></i></div><h2 class="text-2xl font-bold text-gray-800">Live<span class="text-orange-500"> Intelligence</span></h2><span class="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full">Firestore</span></div>
-        <button id="refreshUserNews" class="text-sm bg-white/70 backdrop-blur border border-orange-200 px-4 py-2 rounded-xl"><i class="fas fa-sync-alt text-orange-500"></i> Refresh</button>
-      </div>
-      <div id="newsFeedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"><div class="col-span-full text-center py-12"><i class="fas fa-spinner fa-pulse text-orange-500 text-3xl"></i><p class="mt-3">Loading...</p></div></div>
+      <div class="flex justify-between items-center mb-6"><div class="flex items-center gap-3"><div class="bg-orange-100 p-2 rounded-xl"><i class="fas fa-rss text-orange-500 text-xl"></i></div><h2 class="text-2xl font-bold">Live<span class="text-orange-500"> Intelligence</span></h2></div><button id="refreshUserNews" class="text-sm bg-white/70 border border-orange-200 px-4 py-2 rounded-xl"><i class="fas fa-sync-alt text-orange-500"></i> Refresh</button></div>
+      <div id="newsFeedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"><div class="col-span-full text-center py-12"><i class="fas fa-spinner fa-pulse text-orange-500 text-3xl"></i><p>Loading...</p></div></div>
     </div>
 
     <div class="mb-14">
-      <div class="flex items-center gap-3 mb-6"><div class="bg-orange-100 p-2 rounded-xl"><i class="fas fa-users text-orange-500 text-xl"></i></div><h2 class="text-2xl font-bold text-gray-800">IT<span class="text-orange-500"> Command</span></h2></div>
+      <div class="flex items-center gap-3 mb-6"><div class="bg-orange-100 p-2 rounded-xl"><i class="fas fa-users text-orange-500 text-xl"></i></div><h2 class="text-2xl font-bold">IT<span class="text-orange-500"> Command</span></h2></div>
       <div id="itTeamContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7"></div>
     </div>
 
     <div class="max-w-2xl mx-auto mt-8 mb-10">
       <div class="glass-modern rounded-2xl shadow-2xl overflow-hidden">
-        <div class="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 flex items-center gap-3"><div class="bg-green-500/20 p-2.5 rounded-full"><i class="fab fa-whatsapp text-green-400 text-2xl"></i></div><div><h3 class="text-white font-bold text-xl">IT Incident Desk</h3><p class="text-gray-300 text-sm">24/7 • WhatsApp Bridge</p></div></div>
-        <div class="p-7 text-center"><p class="text-gray-600 mb-5">Report system failures or IT issues. Our engineer responds instantly.</p><button id="globalComplaintBtn" class="whatsapp-neon w-full sm:w-auto px-8 py-3.5 rounded-xl text-white font-bold text-lg shadow-md flex items-center justify-center gap-3 transition hover:scale-[1.02]"><i class="fab fa-whatsapp text-2xl"></i> Register Emergency Complaint</button></div>
+        <div class="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 flex items-center gap-3"><div class="bg-green-500/20 p-2.5 rounded-full"><i class="fab fa-whatsapp text-green-400 text-2xl"></i></div><div><h3 class="text-white font-bold text-xl">IT Incident Desk</h3><p class="text-gray-300 text-sm">24/7 WhatsApp Bridge</p></div></div>
+        <div class="p-7 text-center"><p class="text-gray-600 mb-5">Report system failures or IT issues. Our engineer responds instantly.</p><button id="globalComplaintBtn" class="whatsapp-neon w-full sm:w-auto px-8 py-3.5 rounded-xl text-white font-bold text-lg shadow-md flex items-center justify-center gap-3"><i class="fab fa-whatsapp text-2xl"></i> Register Emergency Complaint</button></div>
       </div>
     </div>
   </div>
@@ -114,46 +87,48 @@
   <!-- ADMIN PANEL -->
   <div id="adminPanel" class="hidden mt-12 rounded-2xl admin-panel-glow shadow-2xl border border-orange-100 overflow-hidden">
     <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-orange-200 flex flex-wrap justify-between items-center gap-3">
-      <div class="flex items-center gap-2"><i class="fas fa-crown text-orange-600 text-xl"></i><h2 class="text-2xl font-bold text-orange-800">Control Core</h2></div>
-      <span class="text-xs bg-orange-200 text-orange-800 px-3 py-1 rounded-full">🔐 Admin Access</span>
+      <div class="flex items-center gap-2"><i class="fas fa-crown text-orange-600 text-xl"></i><h2 class="text-2xl font-bold text-orange-800">Control Core</h2></div><span class="text-xs bg-orange-200 text-orange-800 px-3 py-1 rounded-full">🔐 Admin Access</span>
     </div>
     <div class="p-6 md:p-8 space-y-10">
       <!-- News Management -->
       <div class="bg-white rounded-xl shadow-sm border border-orange-100 p-6">
-        <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-newspaper text-orange-500"></i> Manage News Stream</h3>
+        <h3 class="text-xl font-semibold flex items-center gap-2 mb-5"><i class="fas fa-newspaper text-orange-500"></i> Manage News Stream</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <input type="text" id="newsTitle" placeholder="Headline *" class="border border-gray-200 rounded-xl px-4 py-2.5">
-          <input type="text" id="newsSource" placeholder="Source *" class="border border-gray-200 rounded-xl px-4 py-2.5">
-          <textarea id="newsDesc" rows="2" placeholder="Description *" class="border border-gray-200 rounded-xl px-4 py-2.5"></textarea>
-          <div class="flex gap-3"><input type="date" id="newsDate" class="border border-gray-200 rounded-xl px-4 py-2.5 flex-1"><select id="newsIcon" class="border border-gray-200 rounded-xl px-3 py-2.5 bg-white"><option value="fa-microchip">Chip</option><option value="fa-chart-line">Analytics</option><option value="fa-wifi">Network</option><option value="fa-shield-haltered">Security</option><option value="fa-database">Data</option></select></div>
+          <input type="text" id="newsTitle" placeholder="Headline *" class="border rounded-xl px-4 py-2.5">
+          <input type="text" id="newsSource" placeholder="Source *" class="border rounded-xl px-4 py-2.5">
+          <textarea id="newsDesc" rows="2" placeholder="Description *" class="border rounded-xl px-4 py-2.5"></textarea>
+          <div class="flex gap-3"><input type="date" id="newsDate" class="border rounded-xl px-4 py-2.5 flex-1"><select id="newsIcon" class="border rounded-xl px-3 py-2.5"><option value="fa-microchip">Chip</option><option value="fa-chart-line">Analytics</option><option value="fa-wifi">Network</option><option value="fa-shield-haltered">Security</option><option value="fa-database">Data</option></select></div>
         </div>
         <div class="flex gap-3 mb-6"><button id="addNewsBtn" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2.5 rounded-xl font-semibold"><i class="fas fa-plus"></i> Publish</button><button id="resetNewsFormBtn" class="border border-gray-300 px-5 rounded-xl">Clear</button></div>
-        <div><label class="font-medium text-gray-700 text-sm">📰 Live Articles</label><div id="adminNewsList" class="mt-3 space-y-2 max-h-80 overflow-y-auto pr-1"></div></div>
+        <div><label class="font-medium text-gray-700">📰 Live Articles</label><div id="adminNewsList" class="mt-3 space-y-2 max-h-80 overflow-y-auto"></div></div>
       </div>
       
-      <!-- IT Team Management with IMAGE UPLOAD to Firebase Storage -->
+      <!-- IT Team Management with IMAGE UPLOAD + External URL option -->
       <div class="bg-white rounded-xl shadow-sm border border-orange-100 p-6">
-        <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-user-tie text-orange-500"></i> IT Leadership Directory (with Image Upload)</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-          <input type="text" id="teamName" placeholder="Full Name *" class="border border-gray-200 rounded-xl px-4 py-2.5">
-          <input type="text" id="teamDesignation" placeholder="Designation *" class="border border-gray-200 rounded-xl px-4 py-2.5">
-          <input type="text" id="teamContact" placeholder="WhatsApp Number *" class="border border-gray-200 rounded-xl px-4 py-2.5">
-          <div class="col-span-1 md:col-span-2 lg:col-span-1">
-            <label class="block text-sm text-gray-500 mb-1">Upload Profile Picture</label>
-            <input type="file" id="teamImageFile" accept="image/*" class="border border-gray-200 rounded-xl px-3 py-2 w-full text-sm">
+        <h3 class="text-xl font-semibold flex items-center gap-2 mb-5"><i class="fas fa-user-tie text-orange-500"></i> IT Leadership Directory (Image Upload + URL)</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <input type="text" id="teamName" placeholder="Full Name *" class="border rounded-xl px-4 py-2.5">
+          <input type="text" id="teamDesignation" placeholder="Designation *" class="border rounded-xl px-4 py-2.5">
+          <input type="text" id="teamContact" placeholder="WhatsApp Number *" class="border rounded-xl px-4 py-2.5">
+          <div>
+            <label class="block text-sm text-gray-500">Upload Image (or paste URL below)</label>
+            <input type="file" id="teamImageFile" accept="image/*" class="border rounded-xl px-3 py-2 w-full text-sm">
           </div>
-          <div class="flex items-center gap-3">
-            <div id="imagePreviewContainer" class="w-16 h-16 rounded-full bg-gray-100 border-2 border-orange-300 flex items-center justify-center overflow-hidden">
-              <img id="imagePreview" src="" alt="Preview" class="w-full h-full object-cover hidden">
-              <i id="previewPlaceholder" class="fas fa-user text-gray-400 text-2xl"></i>
-            </div>
-            <span class="text-xs text-gray-500">Preview after upload</span>
+          <div class="md:col-span-2">
+            <input type="text" id="teamImageUrl" placeholder="OR paste image URL (https://...)" class="border rounded-xl px-4 py-2.5 w-full">
           </div>
-          <button id="addTeamBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-2.5 font-semibold flex items-center justify-center gap-2"><i class="fas fa-user-plus"></i> Add/Update Member</button>
+        </div>
+        <div class="flex items-center gap-4 mb-4">
+          <div id="imagePreviewContainer" class="w-16 h-16 rounded-full bg-gray-100 border-2 border-orange-300 flex items-center justify-center overflow-hidden">
+            <img id="imagePreview" src="" alt="Preview" class="w-full h-full object-cover hidden">
+            <i id="previewPlaceholder" class="fas fa-user text-gray-400 text-2xl"></i>
+          </div>
+          <span class="text-xs text-gray-500">Preview (auto-updates)</span>
+          <button id="addTeamBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-2.5 font-semibold ml-auto"><i class="fas fa-user-plus"></i> Add/Update Member</button>
           <button id="resetTeamFormBtn" class="border border-gray-300 rounded-xl px-5 py-2.5">Reset</button>
         </div>
-        <div class="mt-2 text-xs text-gray-400 bg-amber-50 p-2 rounded-lg"><i class="fas fa-info-circle"></i> Select an image to upload directly to Firebase Storage (free). It will be publicly accessible.</div>
-        <div><label class="font-medium text-gray-700 text-sm mt-4 block">👥 Team Roster</label><div id="adminTeamList" class="mt-3 grid sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto"></div></div>
+        <div class="text-xs text-gray-400 bg-amber-50 p-2 rounded-lg"><i class="fas fa-info-circle"></i> Either upload an image or provide a direct image URL. The image will be stored in Firebase Storage (free) and shown immediately.</div>
+        <div class="mt-5"><label class="font-medium text-gray-700">👥 Team Roster</label><div id="adminTeamList" class="mt-3 grid sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto"></div></div>
       </div>
     </div>
   </div>
@@ -162,13 +137,13 @@
 <!-- Complaint Modal -->
 <div id="complaintModal" class="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300 opacity-0 invisible">
   <div class="bg-white w-full max-w-lg mx-4 rounded-2xl shadow-2xl">
-    <div class="flex justify-between items-center border-b px-6 py-4"><h3 class="text-2xl font-bold flex gap-2"><i class="fab fa-whatsapp text-green-500"></i> IT Incident Report</h3><button id="closeModalBtn" class="text-gray-400 text-3xl">&times;</button></div>
+    <div class="flex justify-between items-center border-b px-6 py-4"><h3 class="text-2xl font-bold"><i class="fab fa-whatsapp text-green-500"></i> IT Incident Report</h3><button id="closeModalBtn" class="text-gray-400 text-3xl">&times;</button></div>
     <div class="p-6 space-y-5">
       <input type="text" id="complaintName" placeholder="Your Full Name *" class="w-full border rounded-xl px-4 py-3">
       <input type="text" id="complaintDept" placeholder="Department / Line" class="w-full border rounded-xl px-4 py-3">
       <textarea id="complaintDesc" rows="3" placeholder="Describe the technical issue *" class="w-full border rounded-xl px-4 py-3"></textarea>
     </div>
-    <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3"><button id="cancelModalBtn" class="px-5 py-2 border rounded-xl">Cancel</button><button id="sendComplaintBtn" class="bg-green-600 text-white px-6 py-2 rounded-xl font-bold flex gap-2"><i class="fab fa-whatsapp"></i> Send to Engineer</button></div>
+    <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3"><button id="cancelModalBtn" class="px-5 py-2 border rounded-xl">Cancel</button><button id="sendComplaintBtn" class="bg-green-600 text-white px-6 py-2 rounded-xl font-bold"><i class="fab fa-whatsapp"></i> Send to Engineer</button></div>
   </div>
 </div>
 
@@ -182,48 +157,47 @@
   const teamCol = collection(db, "itTeam");
 
   let editNewsId = null, editTeamId = null;
-  let currentImageFile = null;
-  let oldImageUrl = null;
+  let currentUploadFile = null;
+  let oldImageStoragePath = null;
   const DEFAULT_IT_ENGINEER = "923219876543";
 
   function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('active', show); }
   
-  // Preview selected image
-  const fileInput = document.getElementById('teamImageFile');
-  const imagePreview = document.getElementById('imagePreview');
-  const previewPlaceholder = document.getElementById('previewPlaceholder');
-  fileInput.addEventListener('change', (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        imagePreview.src = ev.target.result;
-        imagePreview.classList.remove('hidden');
-        previewPlaceholder.classList.add('hidden');
-        currentImageFile = e.target.files[0];
-      };
-      reader.readAsDataURL(e.target.files[0]);
-    } else {
-      imagePreview.classList.add('hidden');
-      previewPlaceholder.classList.remove('hidden');
-      currentImageFile = null;
+  // Helper: Get image URL from either file upload or URL input
+  async function processImageForTeam() {
+    const fileInput = document.getElementById('teamImageFile');
+    const urlInput = document.getElementById('teamImageUrl').value.trim();
+    
+    // Priority: if a new file is selected, upload it to Firebase Storage
+    if (fileInput.files && fileInput.files.length > 0) {
+      const file = fileInput.files[0];
+      const timestamp = Date.now();
+      const filename = `team_${timestamp}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const storageRef = ref(storage, `teamImages/${filename}`);
+      await uploadBytes(storageRef, file);
+      const downloadUrl = await getDownloadURL(storageRef);
+      return { url: downloadUrl, storagePath: `teamImages/${filename}` };
     }
-  });
+    // Else use URL if provided
+    if (urlInput) {
+      return { url: urlInput, storagePath: null };
+    }
+    return { url: null, storagePath: null };
+  }
 
-  async function uploadImageAndGetUrl(file, oldUrl) {
-    if (!file) return null;
-    // Delete old image from storage if exists and different
+  // Delete old image from storage if exists
+  async function deleteOldImageIfExists(oldUrl) {
     if (oldUrl && oldUrl.includes('firebasestorage')) {
       try {
-        const oldRef = ref(storage, decodeURIComponent(oldUrl.split('/o/')[1].split('?')[0]));
-        await deleteObject(oldRef);
-      } catch(e) { console.log("Old image delete failed", e); }
+        // Extract path from download URL
+        const decodedUrl = decodeURIComponent(oldUrl);
+        const match = decodedUrl.match(/\/o\/(.+?)\?/);
+        if (match && match[1]) {
+          const oldRef = ref(storage, match[1]);
+          await deleteObject(oldRef);
+        }
+      } catch(e) { console.warn("Could not delete old image", e); }
     }
-    const timestamp = Date.now();
-    const filename = `team_${timestamp}_${file.name}`;
-    const storageRef = ref(storage, `teamImages/${filename}`);
-    await uploadBytes(storageRef, file);
-    const downloadUrl = await getDownloadURL(storageRef);
-    return downloadUrl;
   }
 
   // Render functions
@@ -232,15 +206,15 @@
     try {
       const snap = await getDocs(query(newsCol, orderBy("date", "desc")));
       const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      if (!items.length) { container.innerHTML = '<div class="col-span-full text-center py-12 glass-modern">No news</div>'; return; }
+      if (!items.length) { container.innerHTML = '<div class="col-span-full text-center py-12">No news yet</div>'; return; }
       container.innerHTML = items.map(n => `
         <div class="glass-modern rounded-2xl p-5 border border-orange-100 card-hover">
-          <div class="flex justify-between items-start"><div class="flex gap-2"><i class="fas ${n.icon || 'fa-rss'} text-orange-500 bg-orange-100 p-2.5 rounded-full text-sm"></i><span class="text-xs font-semibold uppercase">${n.source}</span></div><span class="text-xs text-gray-400">${n.date}</span></div>
+          <div class="flex justify-between"><div class="flex gap-2"><i class="fas ${n.icon || 'fa-rss'} text-orange-500 bg-orange-100 p-2 rounded-full"></i><span class="text-xs font-semibold">${n.source}</span></div><span class="text-xs text-gray-400">${n.date}</span></div>
           <h3 class="font-bold text-gray-800 text-lg mt-3">${n.title}</h3>
           <p class="text-gray-600 text-sm mt-2">${n.description}</p>
         </div>
       `).join('');
-    } catch(e) { container.innerHTML = '<div class="col-span-full text-center text-red-500">Error</div>'; }
+    } catch(e) { container.innerHTML = '<div class="col-span-full text-red-500">Error loading news</div>'; }
   }
 
   async function renderITTeam() {
@@ -250,7 +224,10 @@
       const team = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       if (!team.length) { container.innerHTML = '<div class="col-span-full text-center py-10">No team members</div>'; return; }
       container.innerHTML = team.map(m => {
-        const imgUrl = m.imageUrl ? m.imageUrl : `https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true`;
+        let imgUrl = m.imageUrl;
+        if (!imgUrl || imgUrl === "") {
+          imgUrl = `https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true`;
+        }
         return `
           <div class="glass-modern rounded-2xl p-5 text-center card-hover">
             <img src="${imgUrl}" onerror="this.src='https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true'" class="w-28 h-28 rounded-full mx-auto object-cover border-4 border-orange-200">
@@ -271,13 +248,23 @@
     const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     if (!items.length) { container.innerHTML = '<div class="text-gray-400 text-center p-3">No news</div>'; return; }
     container.innerHTML = items.map(n => `
-      <div class="bg-orange-50/50 rounded-xl p-3 flex justify-between items-center gap-3">
+      <div class="bg-orange-50/50 rounded-xl p-3 flex justify-between items-center">
         <div><div class="font-semibold">${n.title}</div><div class="text-xs text-gray-500">${n.source}</div></div>
-        <div class="flex gap-2"><button class="editNewsBtn" data-id="${n.id}" data-title="${n.title}" data-desc="${n.description}" data-source="${n.source}" data-date="${n.date}" data-icon="${n.icon}"><i class="fas fa-pen"></i></button><button class="deleteNewsBtn" data-id="${n.id}"><i class="fas fa-trash"></i></button></div>
+        <div class="flex gap-2"><button class="editNewsBtn" data-id="${n.id}" data-title="${n.title}" data-desc="${n.description}" data-source="${n.source}" data-date="${n.date}" data-icon="${n.icon}"><i class="fas fa-edit"></i></button><button class="deleteNewsBtn" data-id="${n.id}"><i class="fas fa-trash"></i></button></div>
       </div>
     `).join('');
-    document.querySelectorAll('.editNewsBtn').forEach(btn => btn.addEventListener('click', () => { editNewsId = btn.dataset.id; document.getElementById('newsTitle').value = btn.dataset.title; document.getElementById('newsDesc').value = btn.dataset.desc; document.getElementById('newsSource').value = btn.dataset.source; document.getElementById('newsDate').value = btn.dataset.date; document.getElementById('newsIcon').value = btn.dataset.icon; document.getElementById('addNewsBtn').innerHTML = '<i class="fas fa-save"></i> Update News'; }));
-    document.querySelectorAll('.deleteNewsBtn').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Delete?')){ showLoading(true); await deleteDoc(doc(db, "news", btn.dataset.id)); await renderAdminNewsList(); await renderNewsFeed(); showLoading(false); if(editNewsId === btn.dataset.id) resetNewsForm(); } }));
+    document.querySelectorAll('.editNewsBtn').forEach(btn => btn.addEventListener('click', () => {
+      editNewsId = btn.dataset.id;
+      document.getElementById('newsTitle').value = btn.dataset.title;
+      document.getElementById('newsDesc').value = btn.dataset.desc;
+      document.getElementById('newsSource').value = btn.dataset.source;
+      document.getElementById('newsDate').value = btn.dataset.date;
+      document.getElementById('newsIcon').value = btn.dataset.icon;
+      document.getElementById('addNewsBtn').innerHTML = '<i class="fas fa-save"></i> Update News';
+    }));
+    document.querySelectorAll('.deleteNewsBtn').forEach(btn => btn.addEventListener('click', async () => {
+      if(confirm('Delete this news?')){ showLoading(true); await deleteDoc(doc(db, "news", btn.dataset.id)); await renderAdminNewsList(); await renderNewsFeed(); showLoading(false); if(editNewsId === btn.dataset.id) resetNewsForm(); }
+    }));
   }
   function resetNewsForm() { document.getElementById('newsTitle').value=''; document.getElementById('newsDesc').value=''; document.getElementById('newsSource').value=''; document.getElementById('newsDate').value=''; editNewsId=null; document.getElementById('addNewsBtn').innerHTML='<i class="fas fa-plus"></i> Publish News'; }
 
@@ -292,10 +279,55 @@
         <div class="flex gap-2"><button class="editTeamBtn" data-id="${m.id}" data-name="${m.name}" data-desig="${m.designation}" data-contact="${m.contact}" data-img="${m.imageUrl || ''}"><i class="fas fa-edit"></i></button><button class="deleteTeamBtn" data-id="${m.id}" data-img="${m.imageUrl || ''}"><i class="fas fa-trash"></i></button></div>
       </div>
     `).join('');
-    document.querySelectorAll('.editTeamBtn').forEach(btn => btn.addEventListener('click', () => { editTeamId = btn.dataset.id; document.getElementById('teamName').value = btn.dataset.name; document.getElementById('teamDesignation').value = btn.dataset.desig; document.getElementById('teamContact').value = btn.dataset.contact; oldImageUrl = btn.dataset.img; if(oldImageUrl && oldImageUrl!=''){ imagePreview.src = oldImageUrl; imagePreview.classList.remove('hidden'); previewPlaceholder.classList.add('hidden'); } else { imagePreview.classList.add('hidden'); previewPlaceholder.classList.remove('hidden'); } document.getElementById('addTeamBtn').innerHTML = '<i class="fas fa-save"></i> Update Member'; }));
-    document.querySelectorAll('.deleteTeamBtn').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Remove member?')){ showLoading(true); const imgUrl = btn.dataset.img; if(imgUrl && imgUrl.includes('firebasestorage')){ try{ const oldRef = ref(storage, decodeURIComponent(imgUrl.split('/o/')[1].split('?')[0])); await deleteObject(oldRef); } catch(e){} } await deleteDoc(doc(db, "itTeam", btn.dataset.id)); await renderAdminTeamList(); await renderITTeam(); showLoading(false); if(editTeamId === btn.dataset.id) resetTeamForm(); } }));
+    document.querySelectorAll('.editTeamBtn').forEach(btn => btn.addEventListener('click', () => {
+      editTeamId = btn.dataset.id;
+      document.getElementById('teamName').value = btn.dataset.name;
+      document.getElementById('teamDesignation').value = btn.dataset.desig;
+      document.getElementById('teamContact').value = btn.dataset.contact;
+      const oldImg = btn.dataset.img;
+      document.getElementById('teamImageUrl').value = oldImg || '';
+      document.getElementById('teamImageFile').value = '';
+      if(oldImg && oldImg.trim() !== ''){
+        document.getElementById('imagePreview').src = oldImg;
+        document.getElementById('imagePreview').classList.remove('hidden');
+        document.getElementById('previewPlaceholder').classList.add('hidden');
+      } else {
+        document.getElementById('imagePreview').classList.add('hidden');
+        document.getElementById('previewPlaceholder').classList.remove('hidden');
+      }
+      document.getElementById('addTeamBtn').innerHTML = '<i class="fas fa-save"></i> Update Member';
+    }));
+    document.querySelectorAll('.deleteTeamBtn').forEach(btn => btn.addEventListener('click', async () => {
+      if(confirm('Remove member?')){ showLoading(true); const imgUrl = btn.dataset.img; if(imgUrl && imgUrl.includes('firebasestorage')){ await deleteOldImageIfExists(imgUrl); } await deleteDoc(doc(db, "itTeam", btn.dataset.id)); await renderAdminTeamList(); await renderITTeam(); showLoading(false); if(editTeamId === btn.dataset.id) resetTeamForm(); }
+    }));
   }
-  function resetTeamForm() { document.getElementById('teamName').value=''; document.getElementById('teamDesignation').value=''; document.getElementById('teamContact').value=''; fileInput.value=''; imagePreview.classList.add('hidden'); previewPlaceholder.classList.remove('hidden'); currentImageFile = null; oldImageUrl = null; editTeamId=null; document.getElementById('addTeamBtn').innerHTML='<i class="fas fa-user-plus"></i> Add Member'; }
+  function resetTeamForm() {
+    document.getElementById('teamName').value=''; document.getElementById('teamDesignation').value=''; document.getElementById('teamContact').value='';
+    document.getElementById('teamImageFile').value=''; document.getElementById('teamImageUrl').value='';
+    document.getElementById('imagePreview').classList.add('hidden'); document.getElementById('previewPlaceholder').classList.remove('hidden');
+    editTeamId=null; document.getElementById('addTeamBtn').innerHTML='<i class="fas fa-user-plus"></i> Add Member';
+  }
+
+  // Image preview from both file and URL
+  const fileInput = document.getElementById('teamImageFile');
+  const urlInput = document.getElementById('teamImageUrl');
+  const previewImg = document.getElementById('imagePreview');
+  const previewPlaceholder = document.getElementById('previewPlaceholder');
+  
+  fileInput.addEventListener('change', (e) => {
+    if(e.target.files && e.target.files[0]){
+      const reader = new FileReader();
+      reader.onload = (ev) => { previewImg.src = ev.target.result; previewImg.classList.remove('hidden'); previewPlaceholder.classList.add('hidden'); };
+      reader.readAsDataURL(e.target.files[0]);
+      currentUploadFile = e.target.files[0];
+    } else { resetPreview(); }
+  });
+  urlInput.addEventListener('input', (e) => {
+    const val = e.target.value.trim();
+    if(val && (val.startsWith('http') || val.startsWith('data:'))){ previewImg.src = val; previewImg.classList.remove('hidden'); previewPlaceholder.classList.add('hidden'); }
+    else { resetPreview(); }
+  });
+  function resetPreview() { previewImg.classList.add('hidden'); previewPlaceholder.classList.remove('hidden'); }
 
   // Admin session
   function isAdmin() { return sessionStorage.getItem('mp_admin') === 'true'; }
@@ -309,25 +341,57 @@
     if(!title||!desc||!source||!date){ alert("Complete all fields"); return; }
     showLoading(true);
     if(editNewsId) await updateDoc(doc(db, "news", editNewsId), { title, description: desc, source, date, icon });
-    else await addDoc(newsCol, { title, description: desc, source, date, icon, id: Date.now().toString() });
+    else await addDoc(newsCol, { title, description: desc, source, date, icon });
     resetNewsForm(); await renderNewsFeed(); if(isAdmin()) await renderAdminNewsList(); showLoading(false);
   });
   document.getElementById('resetNewsFormBtn')?.addEventListener('click', resetNewsForm);
   
+  // Add/Update Team Member with image handling
   document.getElementById('addTeamBtn').addEventListener('click', async () => {
-    const name=document.getElementById('teamName').value.trim(), desig=document.getElementById('teamDesignation').value.trim(), contact=document.getElementById('teamContact').value.trim();
-    if(!name||!desig||!contact){ alert("Fill required fields"); return; }
+    const name = document.getElementById('teamName').value.trim();
+    const desig = document.getElementById('teamDesignation').value.trim();
+    const contact = document.getElementById('teamContact').value.trim();
+    if(!name || !desig || !contact){ alert("Fill required fields (Name, Designation, Contact)"); return; }
     showLoading(true);
-    let imageUrl = oldImageUrl || null;
-    if (currentImageFile) {
-      imageUrl = await uploadImageAndGetUrl(currentImageFile, oldImageUrl);
-    }
+    
+    let finalImageUrl = null;
+    let oldImage = null;
+    
+    // If editing, fetch old image URL from Firestore
     if(editTeamId){
-      await updateDoc(doc(db, "itTeam", editTeamId), { name, designation: desig, contact, imageUrl: imageUrl || null });
-    } else {
-      await addDoc(teamCol, { name, designation: desig, contact, imageUrl: imageUrl || null });
+      const oldDoc = await getDocs(teamCol);
+      const oldData = oldDoc.docs.find(d => d.id === editTeamId)?.data();
+      oldImage = oldData?.imageUrl || null;
     }
-    resetTeamForm(); await renderITTeam(); if(isAdmin()) await renderAdminTeamList(); showLoading(false);
+    
+    // Process image from file or URL
+    const file = document.getElementById('teamImageFile').files[0];
+    const url = document.getElementById('teamImageUrl').value.trim();
+    if(file){
+      // Upload new file
+      const timestamp = Date.now();
+      const filename = `team_${timestamp}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const storageRef = ref(storage, `teamImages/${filename}`);
+      await uploadBytes(storageRef, file);
+      finalImageUrl = await getDownloadURL(storageRef);
+      // Delete old image if exists and it was from storage
+      if(oldImage && oldImage.includes('firebasestorage')){
+        await deleteOldImageIfExists(oldImage);
+      }
+    } else if(url && url !== ""){
+      finalImageUrl = url;
+    }
+    
+    if(editTeamId){
+      await updateDoc(doc(db, "itTeam", editTeamId), { name, designation: desig, contact, imageUrl: finalImageUrl });
+    } else {
+      await addDoc(teamCol, { name, designation: desig, contact, imageUrl: finalImageUrl });
+    }
+    resetTeamForm();
+    await renderITTeam();
+    if(isAdmin()) await renderAdminTeamList();
+    showLoading(false);
+    alert("Team member saved successfully! Image will appear in the live view.");
   });
   document.getElementById('resetTeamFormBtn')?.addEventListener('click', resetTeamForm);
   document.getElementById('refreshUserNews').addEventListener('click', () => { renderNewsFeed(); renderITTeam(); });
@@ -349,7 +413,7 @@
   await updateAdminUI();
 </script>
 <div class="text-center text-xs text-gray-400 border-t border-orange-200 max-w-7xl mx-auto px-4 pb-6 pt-5 mt-3">
-  <i class="fas fa-fire text-orange-500"></i> M&P TECH Cloud Portal | Admin: <strong>admin123</strong> | Images uploaded to Firebase Storage (free 5GB)
+  <i class="fas fa-fire text-orange-500"></i> M&P TECH Cloud Portal | Admin: <strong>admin123</strong> | Images stored in Firebase Storage (free). After adding/updating, refresh view or wait 2 seconds.
 </div>
 </body>
 </html>
