@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>M&P TECH | Firebase Cloud Portal</title>
-  <!-- Google Fonts + Tailwind + Font Awesome -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDKs with Storage -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
     
     const firebaseConfig = {
@@ -27,16 +27,17 @@
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
+    const storage = getStorage(app);
     
     window.db = db;
+    window.storage = storage;
     window.newsCollection = collection(db, "news");
     window.teamCollection = collection(db, "itTeam");
   </script>
   <style>
-    * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    * { font-family: 'Inter', sans-serif; }
     body {
       background: radial-gradient(circle at 10% 20%, rgba(255, 245, 235, 1) 0%, rgba(255, 235, 220, 1) 100%);
-      min-height: 100vh;
     }
     .glass-modern {
       background: rgba(255, 255, 255, 0.85);
@@ -48,88 +49,42 @@
       background: linear-gradient(135deg, #ff8c42, #ff5e00);
       box-shadow: 0 8px 20px rgba(255, 94, 0, 0.25);
     }
-    .card-hover {
-      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-    }
-    .card-hover:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 25px 35px -12px rgba(249, 115, 22, 0.25);
-      border-color: rgba(249, 115, 22, 0.5);
-    }
-    .whatsapp-neon {
-      background: linear-gradient(105deg, #25D366, #128C7E);
-      box-shadow: 0 8px 18px rgba(37, 211, 102, 0.3);
-    }
-    .admin-panel-glow {
-      background: rgba(255, 255, 255, 0.97);
-      backdrop-filter: blur(8px);
-      border-left: 5px solid #f97316;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-    }
+    .card-hover { transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+    .card-hover:hover { transform: translateY(-6px); box-shadow: 0 25px 35px -12px rgba(249,115,22,0.25); }
+    .whatsapp-neon { background: linear-gradient(105deg, #25D366, #128C7E); box-shadow: 0 8px 18px rgba(37,211,102,0.3); }
+    .admin-panel-glow { background: rgba(255,255,255,0.97); backdrop-filter: blur(8px); border-left: 5px solid #f97316; }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: #ffe6d5; border-radius: 10px; }
     ::-webkit-scrollbar-thumb { background: #f97316; border-radius: 10px; }
-    .animate-float {
-      animation: float 3s ease-in-out infinite;
-    }
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-5px); }
-      100% { transform: translateY(0px); }
-    }
-    .loading-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.3);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 100;
-      visibility: hidden;
-      opacity: 0;
-      transition: 0.2s;
-    }
-    .loading-overlay.active {
-      visibility: visible;
-      opacity: 1;
-    }
-    /* image preview */
-    .image-preview {
-      width: 64px;
-      height: 64px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #f97316;
-      background: #fef3c7;
-    }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-5px); } 100% { transform: translateY(0px); } }
+    .loading-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.3); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; visibility: hidden; opacity: 0; transition: 0.2s; }
+    .loading-overlay.active { visibility: visible; opacity: 1; }
+    .image-preview { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid #f97316; background: #fef3c7; }
   </style>
 </head>
 <body>
 
 <div class="loading-overlay" id="loadingOverlay">
-  <div class="bg-white p-4 rounded-2xl shadow-xl flex gap-3 items-center"><i class="fas fa-spinner fa-pulse text-orange-500 text-2xl"></i><span>Saving to cloud...</span></div>
+  <div class="bg-white p-4 rounded-2xl shadow-xl flex gap-3 items-center"><i class="fas fa-spinner fa-pulse text-orange-500 text-2xl"></i><span>Processing...</span></div>
 </div>
 
 <div class="max-w-[1440px] mx-auto px-5 md:px-8 lg:px-10 py-8 md:py-10">
   
   <!-- Header -->
-  <div class="flex flex-wrap justify-between items-center gap-5 mb-10 pb-2 relative">
+  <div class="flex flex-wrap justify-between items-center gap-5 mb-10 pb-2">
     <div class="flex items-center gap-4">
       <div class="orange-glow w-14 h-14 rounded-2xl flex items-center justify-center shadow-xl animate-float">
         <i class="fas fa-microchip text-white text-2xl"></i>
       </div>
       <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight bg-gradient-to-r from-orange-700 to-orange-500 bg-clip-text text-transparent">M&P TECH</h1>
-        <p class="text-gray-500 text-sm font-medium mt-0.5">Cloud-Powered • Real-time Ops • IT Response</p>
+        <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-orange-700 to-orange-500 bg-clip-text text-transparent">M&P TECH</h1>
+        <p class="text-gray-500 text-sm">Cloud-Powered • Real-time Ops • IT Response</p>
       </div>
     </div>
     <div class="flex gap-3">
       <button id="adminLoginBtn" class="bg-white/70 backdrop-blur-sm border border-orange-300 hover:border-orange-500 text-gray-700 hover:text-orange-700 px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm"><i class="fas fa-shield-alt"></i> Admin</button>
-      <button id="adminLogoutBtn" class="hidden bg-gray-800/90 text-white px-5 py-2.5 rounded-xl text-sm font-semibold flex items-center gap-2 shadow-md hover:bg-gray-900"><i class="fas fa-sign-out-alt"></i> Exit</button>
+      <button id="adminLogoutBtn" class="hidden bg-gray-800/90 text-white px-5 py-2.5 rounded-xl text-sm font-semibold"><i class="fas fa-sign-out-alt"></i> Exit</button>
     </div>
   </div>
 
@@ -137,10 +92,10 @@
   <div id="userView">
     <div class="mb-14">
       <div class="flex flex-wrap justify-between items-center mb-6">
-        <div class="flex items-center gap-3"><div class="bg-orange-100 p-2 rounded-xl"><i class="fas fa-rss text-orange-500 text-xl"></i></div><h2 class="text-2xl font-bold text-gray-800">Live<span class="text-orange-500"> Intelligence</span></h2><span class="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full">Firestore Cloud</span></div>
-        <button id="refreshUserNews" class="text-sm bg-white/70 backdrop-blur border border-orange-200 px-4 py-2 rounded-xl shadow-sm hover:bg-orange-50 transition flex items-center gap-2"><i class="fas fa-sync-alt text-orange-500"></i> Refresh</button>
+        <div class="flex items-center gap-3"><div class="bg-orange-100 p-2 rounded-xl"><i class="fas fa-rss text-orange-500 text-xl"></i></div><h2 class="text-2xl font-bold text-gray-800">Live<span class="text-orange-500"> Intelligence</span></h2><span class="text-xs bg-orange-100 text-orange-700 px-3 py-1 rounded-full">Firestore</span></div>
+        <button id="refreshUserNews" class="text-sm bg-white/70 backdrop-blur border border-orange-200 px-4 py-2 rounded-xl"><i class="fas fa-sync-alt text-orange-500"></i> Refresh</button>
       </div>
-      <div id="newsFeedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"><div class="col-span-full text-center py-12"><i class="fas fa-spinner fa-pulse text-orange-500 text-3xl"></i><p class="mt-3">Loading from cloud...</p></div></div>
+      <div id="newsFeedContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7"><div class="col-span-full text-center py-12"><i class="fas fa-spinner fa-pulse text-orange-500 text-3xl"></i><p class="mt-3">Loading...</p></div></div>
     </div>
 
     <div class="mb-14">
@@ -150,7 +105,7 @@
 
     <div class="max-w-2xl mx-auto mt-8 mb-10">
       <div class="glass-modern rounded-2xl shadow-2xl overflow-hidden">
-        <div class="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 flex items-center gap-3"><div class="bg-green-500/20 p-2.5 rounded-full"><i class="fab fa-whatsapp text-green-400 text-2xl"></i></div><div><h3 class="text-white font-bold text-xl">IT Incident Desk</h3><p class="text-gray-300 text-sm">24/7 • WhatsApp Bridge to Engineer</p></div></div>
+        <div class="bg-gradient-to-r from-gray-900 to-gray-800 px-6 py-5 flex items-center gap-3"><div class="bg-green-500/20 p-2.5 rounded-full"><i class="fab fa-whatsapp text-green-400 text-2xl"></i></div><div><h3 class="text-white font-bold text-xl">IT Incident Desk</h3><p class="text-gray-300 text-sm">24/7 • WhatsApp Bridge</p></div></div>
         <div class="p-7 text-center"><p class="text-gray-600 mb-5">Report system failures or IT issues. Our engineer responds instantly.</p><button id="globalComplaintBtn" class="whatsapp-neon w-full sm:w-auto px-8 py-3.5 rounded-xl text-white font-bold text-lg shadow-md flex items-center justify-center gap-3 transition hover:scale-[1.02]"><i class="fab fa-whatsapp text-2xl"></i> Register Emergency Complaint</button></div>
       </div>
     </div>
@@ -158,41 +113,47 @@
 
   <!-- ADMIN PANEL -->
   <div id="adminPanel" class="hidden mt-12 rounded-2xl admin-panel-glow shadow-2xl border border-orange-100 overflow-hidden">
-    <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-orange-200 flex flex-wrap justify-between items-center gap-3"><div class="flex items-center gap-2"><i class="fas fa-crown text-orange-600 text-xl"></i><h2 class="text-2xl font-bold text-orange-800">Control Core</h2></div><span class="text-xs bg-orange-200 text-orange-800 px-3 py-1 rounded-full">🔐 Admin Access</span></div>
+    <div class="bg-gradient-to-r from-orange-50 to-amber-50 px-6 py-4 border-b border-orange-200 flex flex-wrap justify-between items-center gap-3">
+      <div class="flex items-center gap-2"><i class="fas fa-crown text-orange-600 text-xl"></i><h2 class="text-2xl font-bold text-orange-800">Control Core</h2></div>
+      <span class="text-xs bg-orange-200 text-orange-800 px-3 py-1 rounded-full">🔐 Admin Access</span>
+    </div>
     <div class="p-6 md:p-8 space-y-10">
       <!-- News Management -->
       <div class="bg-white rounded-xl shadow-sm border border-orange-100 p-6">
-        <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-newspaper text-orange-500"></i> Manage News Stream (Cloud)</h3>
+        <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-newspaper text-orange-500"></i> Manage News Stream</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <input type="text" id="newsTitle" placeholder="Headline *" class="border border-gray-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-orange-200">
+          <input type="text" id="newsTitle" placeholder="Headline *" class="border border-gray-200 rounded-xl px-4 py-2.5">
           <input type="text" id="newsSource" placeholder="Source *" class="border border-gray-200 rounded-xl px-4 py-2.5">
           <textarea id="newsDesc" rows="2" placeholder="Description *" class="border border-gray-200 rounded-xl px-4 py-2.5"></textarea>
           <div class="flex gap-3"><input type="date" id="newsDate" class="border border-gray-200 rounded-xl px-4 py-2.5 flex-1"><select id="newsIcon" class="border border-gray-200 rounded-xl px-3 py-2.5 bg-white"><option value="fa-microchip">Chip</option><option value="fa-chart-line">Analytics</option><option value="fa-wifi">Network</option><option value="fa-shield-haltered">Security</option><option value="fa-database">Data</option></select></div>
         </div>
-        <div class="flex gap-3 mb-6"><button id="addNewsBtn" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2.5 rounded-xl font-semibold"><i class="fas fa-plus"></i> Publish / Update</button><button id="resetNewsFormBtn" class="border border-gray-300 px-5 rounded-xl hover:bg-gray-50">Clear</button></div>
-        <div><label class="font-medium text-gray-700 text-sm">📰 Live Articles (Firestore)</label><div id="adminNewsList" class="mt-3 space-y-2 max-h-80 overflow-y-auto pr-1"></div></div>
+        <div class="flex gap-3 mb-6"><button id="addNewsBtn" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-2.5 rounded-xl font-semibold"><i class="fas fa-plus"></i> Publish</button><button id="resetNewsFormBtn" class="border border-gray-300 px-5 rounded-xl">Clear</button></div>
+        <div><label class="font-medium text-gray-700 text-sm">📰 Live Articles</label><div id="adminNewsList" class="mt-3 space-y-2 max-h-80 overflow-y-auto pr-1"></div></div>
       </div>
-      <!-- IT Team Management with image preview fix -->
+      
+      <!-- IT Team Management with IMAGE UPLOAD to Firebase Storage -->
       <div class="bg-white rounded-xl shadow-sm border border-orange-100 p-6">
-        <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-user-tie text-orange-500"></i> IT Leadership Directory (Cloud)</h3>
+        <h3 class="text-xl font-semibold flex items-center gap-2 text-gray-800 mb-5"><i class="fas fa-user-tie text-orange-500"></i> IT Leadership Directory (with Image Upload)</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
           <input type="text" id="teamName" placeholder="Full Name *" class="border border-gray-200 rounded-xl px-4 py-2.5">
           <input type="text" id="teamDesignation" placeholder="Designation *" class="border border-gray-200 rounded-xl px-4 py-2.5">
           <input type="text" id="teamContact" placeholder="WhatsApp Number *" class="border border-gray-200 rounded-xl px-4 py-2.5">
           <div class="col-span-1 md:col-span-2 lg:col-span-1">
-            <input type="text" id="teamImageUrl" placeholder="Image URL (direct link, e.g., https://example.com/photo.jpg)" class="border border-gray-200 rounded-xl px-4 py-2.5 w-full">
+            <label class="block text-sm text-gray-500 mb-1">Upload Profile Picture</label>
+            <input type="file" id="teamImageFile" accept="image/*" class="border border-gray-200 rounded-xl px-3 py-2 w-full text-sm">
           </div>
           <div class="flex items-center gap-3">
             <div id="imagePreviewContainer" class="w-16 h-16 rounded-full bg-gray-100 border-2 border-orange-300 flex items-center justify-center overflow-hidden">
               <img id="imagePreview" src="" alt="Preview" class="w-full h-full object-cover hidden">
               <i id="previewPlaceholder" class="fas fa-user text-gray-400 text-2xl"></i>
             </div>
-            <span class="text-xs text-gray-400">Live preview</span>
+            <span class="text-xs text-gray-500">Preview after upload</span>
           </div>
           <button id="addTeamBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-2.5 font-semibold flex items-center justify-center gap-2"><i class="fas fa-user-plus"></i> Add/Update Member</button>
-          <button id="resetTeamFormBtn" class="border border-gray-300 rounded-xl px-5 py-2.5 hover:bg-gray-50">Reset</button>
+          <button id="resetTeamFormBtn" class="border border-gray-300 rounded-xl px-5 py-2.5">Reset</button>
         </div>
-        <div><label class="font-medium text-gray-700 text-sm">👥 Team Roster</label><div id="adminTeamList" class="mt-3 grid sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto"></div></div>
+        <div class="mt-2 text-xs text-gray-400 bg-amber-50 p-2 rounded-lg"><i class="fas fa-info-circle"></i> Select an image to upload directly to Firebase Storage (free). It will be publicly accessible.</div>
+        <div><label class="font-medium text-gray-700 text-sm mt-4 block">👥 Team Roster</label><div id="adminTeamList" class="mt-3 grid sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto"></div></div>
       </div>
     </div>
   </div>
@@ -202,121 +163,139 @@
 <div id="complaintModal" class="fixed inset-0 bg-black/50 backdrop-blur-md flex items-center justify-center z-50 transition-all duration-300 opacity-0 invisible">
   <div class="bg-white w-full max-w-lg mx-4 rounded-2xl shadow-2xl">
     <div class="flex justify-between items-center border-b px-6 py-4"><h3 class="text-2xl font-bold flex gap-2"><i class="fab fa-whatsapp text-green-500"></i> IT Incident Report</h3><button id="closeModalBtn" class="text-gray-400 text-3xl">&times;</button></div>
-    <div class="p-6 space-y-5"><input type="text" id="complaintName" placeholder="Your Full Name *" class="w-full border rounded-xl px-4 py-3"><input type="text" id="complaintDept" placeholder="Department / Line" class="w-full border rounded-xl px-4 py-3"><textarea id="complaintDesc" rows="3" placeholder="Describe the technical issue *" class="w-full border rounded-xl px-4 py-3"></textarea><p class="text-xs text-gray-400"><i class="fas fa-lock"></i> Encrypted → Engineer's WhatsApp</p></div>
+    <div class="p-6 space-y-5">
+      <input type="text" id="complaintName" placeholder="Your Full Name *" class="w-full border rounded-xl px-4 py-3">
+      <input type="text" id="complaintDept" placeholder="Department / Line" class="w-full border rounded-xl px-4 py-3">
+      <textarea id="complaintDesc" rows="3" placeholder="Describe the technical issue *" class="w-full border rounded-xl px-4 py-3"></textarea>
+    </div>
     <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-end gap-3"><button id="cancelModalBtn" class="px-5 py-2 border rounded-xl">Cancel</button><button id="sendComplaintBtn" class="bg-green-600 text-white px-6 py-2 rounded-xl font-bold flex gap-2"><i class="fab fa-whatsapp"></i> Send to Engineer</button></div>
   </div>
 </div>
 
 <script type="module">
   import { getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+  
   const db = window.db;
+  const storage = window.storage;
   const newsCol = collection(db, "news");
   const teamCol = collection(db, "itTeam");
 
   let editNewsId = null, editTeamId = null;
-  const DEFAULT_IT_ENGINEER = "923219876543"; // change to actual engineer
+  let currentImageFile = null;
+  let oldImageUrl = null;
+  const DEFAULT_IT_ENGINEER = "923219876543";
 
-  function showLoading(show) { const el = document.getElementById('loadingOverlay'); if(show) el.classList.add('active'); else el.classList.remove('active'); }
-
-  // Image preview logic for admin form
-  const teamImageUrlInput = document.getElementById('teamImageUrl');
+  function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('active', show); }
+  
+  // Preview selected image
+  const fileInput = document.getElementById('teamImageFile');
   const imagePreview = document.getElementById('imagePreview');
   const previewPlaceholder = document.getElementById('previewPlaceholder');
-  function updateImagePreview(url) {
-    if (url && url.trim() !== "") {
-      imagePreview.src = url;
-      imagePreview.classList.remove('hidden');
-      previewPlaceholder.classList.add('hidden');
-      imagePreview.onerror = () => {
-        // if fails, show placeholder
-        imagePreview.classList.add('hidden');
-        previewPlaceholder.classList.remove('hidden');
+  fileInput.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        imagePreview.src = ev.target.result;
+        imagePreview.classList.remove('hidden');
+        previewPlaceholder.classList.add('hidden');
+        currentImageFile = e.target.files[0];
       };
+      reader.readAsDataURL(e.target.files[0]);
     } else {
       imagePreview.classList.add('hidden');
       previewPlaceholder.classList.remove('hidden');
+      currentImageFile = null;
     }
-  }
-  teamImageUrlInput.addEventListener('input', (e) => updateImagePreview(e.target.value));
+  });
 
-  // Render news
+  async function uploadImageAndGetUrl(file, oldUrl) {
+    if (!file) return null;
+    // Delete old image from storage if exists and different
+    if (oldUrl && oldUrl.includes('firebasestorage')) {
+      try {
+        const oldRef = ref(storage, decodeURIComponent(oldUrl.split('/o/')[1].split('?')[0]));
+        await deleteObject(oldRef);
+      } catch(e) { console.log("Old image delete failed", e); }
+    }
+    const timestamp = Date.now();
+    const filename = `team_${timestamp}_${file.name}`;
+    const storageRef = ref(storage, `teamImages/${filename}`);
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+    return downloadUrl;
+  }
+
+  // Render functions
   async function renderNewsFeed() {
     const container = document.getElementById('newsFeedContainer');
-    if (!container) return;
     try {
-      const q = query(newsCol, orderBy("date", "desc"));
-      const snap = await getDocs(q);
+      const snap = await getDocs(query(newsCol, orderBy("date", "desc")));
       const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      if (items.length === 0) { container.innerHTML = '<div class="col-span-full text-center py-12 glass-modern rounded-2xl"><i class="fas fa-newspaper text-orange-300 text-5xl"></i><p class="mt-3">No news yet. Admin can add.</p></div>'; return; }
+      if (!items.length) { container.innerHTML = '<div class="col-span-full text-center py-12 glass-modern">No news</div>'; return; }
       container.innerHTML = items.map(n => `
         <div class="glass-modern rounded-2xl p-5 border border-orange-100 card-hover">
-          <div class="flex justify-between items-start"><div class="flex gap-2 items-center"><i class="fas ${n.icon || 'fa-rss'} text-orange-500 bg-orange-100 p-2.5 rounded-full text-sm"></i><span class="text-xs font-semibold text-gray-500 uppercase">${n.source}</span></div><span class="text-xs text-gray-400 bg-white/50 px-2 py-1 rounded-full">${n.date}</span></div>
+          <div class="flex justify-between items-start"><div class="flex gap-2"><i class="fas ${n.icon || 'fa-rss'} text-orange-500 bg-orange-100 p-2.5 rounded-full text-sm"></i><span class="text-xs font-semibold uppercase">${n.source}</span></div><span class="text-xs text-gray-400">${n.date}</span></div>
           <h3 class="font-bold text-gray-800 text-lg mt-3">${n.title}</h3>
-          <p class="text-gray-600 text-sm mt-2 leading-relaxed">${n.description}</p>
-          <div class="mt-4 text-orange-500 text-xs flex items-center gap-1"><i class="fas fa-cloud"></i> ${n.id.slice(-6)}</div>
+          <p class="text-gray-600 text-sm mt-2">${n.description}</p>
         </div>
       `).join('');
-    } catch(e) { console.error(e); container.innerHTML = '<div class="col-span-full text-center text-red-500">Error loading news</div>'; }
+    } catch(e) { container.innerHTML = '<div class="col-span-full text-center text-red-500">Error</div>'; }
   }
 
   async function renderITTeam() {
     const container = document.getElementById('itTeamContainer');
-    if (!container) return;
     try {
       const snap = await getDocs(teamCol);
       const team = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      if (team.length === 0) { container.innerHTML = '<div class="col-span-full text-center py-10 glass-modern">No team members</div>'; return; }
+      if (!team.length) { container.innerHTML = '<div class="col-span-full text-center py-10">No team members</div>'; return; }
       container.innerHTML = team.map(m => {
-        const imgUrl = m.imageUrl && m.imageUrl.trim() ? m.imageUrl : null;
-        // Use imgUrl if valid, else fallback to UI Avatars
-        const finalImg = imgUrl ? imgUrl : `https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true`;
+        const imgUrl = m.imageUrl ? m.imageUrl : `https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true`;
         return `
-          <div class="glass-modern rounded-2xl overflow-hidden border border-orange-100 shadow-md card-hover p-5 text-center">
-            <img src="${finalImg}" onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true'" class="w-28 h-28 rounded-full mx-auto object-cover border-4 border-orange-200">
+          <div class="glass-modern rounded-2xl p-5 text-center card-hover">
+            <img src="${imgUrl}" onerror="this.src='https://ui-avatars.com/api/?background=f97316&color=fff&name=${encodeURIComponent(m.name)}&size=128&length=2&bold=true'" class="w-28 h-28 rounded-full mx-auto object-cover border-4 border-orange-200">
             <h3 class="font-bold text-xl mt-4">${m.name}</h3>
             <p class="text-orange-600 font-medium text-sm">${m.designation}</p>
             <p class="text-gray-400 text-xs mt-1">${m.contact}</p>
-            <a href="https://wa.me/${m.contact}?text=Hello%20${encodeURIComponent(m.name)}%2C%20IT%20support%20from%20M%26P" target="_blank" class="inline-flex items-center gap-2 mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full text-sm font-semibold"><i class="fab fa-whatsapp"></i> Direct Chat</a>
+            <a href="https://wa.me/${m.contact}?text=Hello%20${encodeURIComponent(m.name)}" target="_blank" class="inline-flex items-center gap-2 mt-4 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full text-sm"><i class="fab fa-whatsapp"></i> Direct Chat</a>
           </div>
         `;
       }).join('');
-    } catch(e) { console.error(e); container.innerHTML = '<div class="col-span-full text-center text-red-500">Error loading team</div>'; }
+    } catch(e) { console.error(e); }
   }
 
   // Admin lists
   async function renderAdminNewsList() {
     const container = document.getElementById('adminNewsList');
-    if (!container) return;
     const snap = await getDocs(query(newsCol, orderBy("date", "desc")));
     const items = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    if (!items.length) { container.innerHTML = '<div class="text-gray-400 text-center p-3">No news articles</div>'; return; }
+    if (!items.length) { container.innerHTML = '<div class="text-gray-400 text-center p-3">No news</div>'; return; }
     container.innerHTML = items.map(n => `
-      <div class="bg-orange-50/50 rounded-xl p-3 flex justify-between items-center gap-3 border border-orange-100">
-        <div><div class="font-semibold">${n.title}</div><div class="text-xs text-gray-500">${n.source} · ${n.date}</div></div>
-        <div class="flex gap-2"><button class="editNewsBtn bg-white border border-orange-300 text-orange-700 px-3 py-1 rounded-lg text-sm" data-id="${n.id}" data-title="${n.title}" data-desc="${n.description}" data-source="${n.source}" data-date="${n.date}" data-icon="${n.icon}"><i class="fas fa-pen"></i></button><button class="deleteNewsBtn bg-white border border-red-200 text-red-600 px-3 py-1 rounded-lg text-sm" data-id="${n.id}"><i class="fas fa-trash"></i></button></div>
+      <div class="bg-orange-50/50 rounded-xl p-3 flex justify-between items-center gap-3">
+        <div><div class="font-semibold">${n.title}</div><div class="text-xs text-gray-500">${n.source}</div></div>
+        <div class="flex gap-2"><button class="editNewsBtn" data-id="${n.id}" data-title="${n.title}" data-desc="${n.description}" data-source="${n.source}" data-date="${n.date}" data-icon="${n.icon}"><i class="fas fa-pen"></i></button><button class="deleteNewsBtn" data-id="${n.id}"><i class="fas fa-trash"></i></button></div>
       </div>
     `).join('');
     document.querySelectorAll('.editNewsBtn').forEach(btn => btn.addEventListener('click', () => { editNewsId = btn.dataset.id; document.getElementById('newsTitle').value = btn.dataset.title; document.getElementById('newsDesc').value = btn.dataset.desc; document.getElementById('newsSource').value = btn.dataset.source; document.getElementById('newsDate').value = btn.dataset.date; document.getElementById('newsIcon').value = btn.dataset.icon; document.getElementById('addNewsBtn').innerHTML = '<i class="fas fa-save"></i> Update News'; }));
-    document.querySelectorAll('.deleteNewsBtn').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Delete this news?')){ showLoading(true); await deleteDoc(doc(db, "news", btn.dataset.id)); await renderAdminNewsList(); await renderNewsFeed(); showLoading(false); if(editNewsId === btn.dataset.id) resetNewsForm(); } }));
+    document.querySelectorAll('.deleteNewsBtn').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Delete?')){ showLoading(true); await deleteDoc(doc(db, "news", btn.dataset.id)); await renderAdminNewsList(); await renderNewsFeed(); showLoading(false); if(editNewsId === btn.dataset.id) resetNewsForm(); } }));
   }
-  function resetNewsForm() { document.getElementById('newsTitle').value=''; document.getElementById('newsDesc').value=''; document.getElementById('newsSource').value=''; document.getElementById('newsDate').value=''; document.getElementById('newsIcon').value='fa-microchip'; editNewsId=null; document.getElementById('addNewsBtn').innerHTML='<i class="fas fa-plus"></i> Publish News'; }
+  function resetNewsForm() { document.getElementById('newsTitle').value=''; document.getElementById('newsDesc').value=''; document.getElementById('newsSource').value=''; document.getElementById('newsDate').value=''; editNewsId=null; document.getElementById('addNewsBtn').innerHTML='<i class="fas fa-plus"></i> Publish News'; }
 
   async function renderAdminTeamList() {
     const container = document.getElementById('adminTeamList');
-    if (!container) return;
     const snap = await getDocs(teamCol);
     const team = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    if (!team.length) { container.innerHTML = '<div class="text-gray-400 col-span-full text-center p-3">No team members</div>'; return; }
+    if (!team.length) { container.innerHTML = '<div class="text-gray-400 col-span-full text-center p-3">No members</div>'; return; }
     container.innerHTML = team.map(m => `
-      <div class="bg-orange-50/50 rounded-xl p-3 flex justify-between items-center gap-2 border border-orange-100">
-        <div><div class="font-medium">${m.name}</div><div class="text-xs text-gray-500">${m.designation} | ${m.contact}</div></div>
-        <div class="flex gap-2"><button class="editTeamBtn bg-white border border-orange-300 text-orange-700 px-3 py-1 rounded-lg text-sm" data-id="${m.id}" data-name="${m.name}" data-desig="${m.designation}" data-contact="${m.contact}" data-img="${m.imageUrl || ''}"><i class="fas fa-edit"></i></button><button class="deleteTeamBtn bg-white border border-red-200 text-red-600 px-3 py-1 rounded-lg text-sm" data-id="${m.id}"><i class="fas fa-trash"></i></button></div>
+      <div class="bg-orange-50/50 rounded-xl p-3 flex justify-between items-center gap-2">
+        <div><div class="font-medium">${m.name}</div><div class="text-xs text-gray-500">${m.designation}</div></div>
+        <div class="flex gap-2"><button class="editTeamBtn" data-id="${m.id}" data-name="${m.name}" data-desig="${m.designation}" data-contact="${m.contact}" data-img="${m.imageUrl || ''}"><i class="fas fa-edit"></i></button><button class="deleteTeamBtn" data-id="${m.id}" data-img="${m.imageUrl || ''}"><i class="fas fa-trash"></i></button></div>
       </div>
     `).join('');
-    document.querySelectorAll('.editTeamBtn').forEach(btn => btn.addEventListener('click', () => { editTeamId = btn.dataset.id; document.getElementById('teamName').value = btn.dataset.name; document.getElementById('teamDesignation').value = btn.dataset.desig; document.getElementById('teamContact').value = btn.dataset.contact; document.getElementById('teamImageUrl').value = btn.dataset.img; updateImagePreview(btn.dataset.img); document.getElementById('addTeamBtn').innerHTML = '<i class="fas fa-save"></i> Update Member'; }));
-    document.querySelectorAll('.deleteTeamBtn').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Remove member?')){ showLoading(true); await deleteDoc(doc(db, "itTeam", btn.dataset.id)); await renderAdminTeamList(); await renderITTeam(); showLoading(false); if(editTeamId === btn.dataset.id) resetTeamForm(); } }));
+    document.querySelectorAll('.editTeamBtn').forEach(btn => btn.addEventListener('click', () => { editTeamId = btn.dataset.id; document.getElementById('teamName').value = btn.dataset.name; document.getElementById('teamDesignation').value = btn.dataset.desig; document.getElementById('teamContact').value = btn.dataset.contact; oldImageUrl = btn.dataset.img; if(oldImageUrl && oldImageUrl!=''){ imagePreview.src = oldImageUrl; imagePreview.classList.remove('hidden'); previewPlaceholder.classList.add('hidden'); } else { imagePreview.classList.add('hidden'); previewPlaceholder.classList.remove('hidden'); } document.getElementById('addTeamBtn').innerHTML = '<i class="fas fa-save"></i> Update Member'; }));
+    document.querySelectorAll('.deleteTeamBtn').forEach(btn => btn.addEventListener('click', async () => { if(confirm('Remove member?')){ showLoading(true); const imgUrl = btn.dataset.img; if(imgUrl && imgUrl.includes('firebasestorage')){ try{ const oldRef = ref(storage, decodeURIComponent(imgUrl.split('/o/')[1].split('?')[0])); await deleteObject(oldRef); } catch(e){} } await deleteDoc(doc(db, "itTeam", btn.dataset.id)); await renderAdminTeamList(); await renderITTeam(); showLoading(false); if(editTeamId === btn.dataset.id) resetTeamForm(); } }));
   }
-  function resetTeamForm() { document.getElementById('teamName').value=''; document.getElementById('teamDesignation').value=''; document.getElementById('teamContact').value=''; document.getElementById('teamImageUrl').value=''; editTeamId=null; updateImagePreview(''); document.getElementById('addTeamBtn').innerHTML='<i class="fas fa-user-plus"></i> Add Member'; }
+  function resetTeamForm() { document.getElementById('teamName').value=''; document.getElementById('teamDesignation').value=''; document.getElementById('teamContact').value=''; fileInput.value=''; imagePreview.classList.add('hidden'); previewPlaceholder.classList.remove('hidden'); currentImageFile = null; oldImageUrl = null; editTeamId=null; document.getElementById('addTeamBtn').innerHTML='<i class="fas fa-user-plus"></i> Add Member'; }
 
   // Admin session
   function isAdmin() { return sessionStorage.getItem('mp_admin') === 'true'; }
@@ -329,30 +308,26 @@
     const title=document.getElementById('newsTitle').value.trim(), desc=document.getElementById('newsDesc').value.trim(), source=document.getElementById('newsSource').value.trim(), date=document.getElementById('newsDate').value, icon=document.getElementById('newsIcon').value;
     if(!title||!desc||!source||!date){ alert("Complete all fields"); return; }
     showLoading(true);
-    if(editNewsId){
-      await updateDoc(doc(db, "news", editNewsId), { title, description: desc, source, date, icon });
-    } else {
-      await addDoc(newsCol, { title, description: desc, source, date, icon, id: Date.now().toString() });
-    }
-    resetNewsForm();
-    await renderNewsFeed();
-    if(isAdmin()) await renderAdminNewsList();
-    showLoading(false);
+    if(editNewsId) await updateDoc(doc(db, "news", editNewsId), { title, description: desc, source, date, icon });
+    else await addDoc(newsCol, { title, description: desc, source, date, icon, id: Date.now().toString() });
+    resetNewsForm(); await renderNewsFeed(); if(isAdmin()) await renderAdminNewsList(); showLoading(false);
   });
   document.getElementById('resetNewsFormBtn')?.addEventListener('click', resetNewsForm);
+  
   document.getElementById('addTeamBtn').addEventListener('click', async () => {
-    const name=document.getElementById('teamName').value.trim(), desig=document.getElementById('teamDesignation').value.trim(), contact=document.getElementById('teamContact').value.trim(), img=document.getElementById('teamImageUrl').value.trim();
+    const name=document.getElementById('teamName').value.trim(), desig=document.getElementById('teamDesignation').value.trim(), contact=document.getElementById('teamContact').value.trim();
     if(!name||!desig||!contact){ alert("Fill required fields"); return; }
     showLoading(true);
-    if(editTeamId){
-      await updateDoc(doc(db, "itTeam", editTeamId), { name, designation: desig, contact, imageUrl: img });
-    } else {
-      await addDoc(teamCol, { name, designation: desig, contact, imageUrl: img });
+    let imageUrl = oldImageUrl || null;
+    if (currentImageFile) {
+      imageUrl = await uploadImageAndGetUrl(currentImageFile, oldImageUrl);
     }
-    resetTeamForm();
-    await renderITTeam();
-    if(isAdmin()) await renderAdminTeamList();
-    showLoading(false);
+    if(editTeamId){
+      await updateDoc(doc(db, "itTeam", editTeamId), { name, designation: desig, contact, imageUrl: imageUrl || null });
+    } else {
+      await addDoc(teamCol, { name, designation: desig, contact, imageUrl: imageUrl || null });
+    }
+    resetTeamForm(); await renderITTeam(); if(isAdmin()) await renderAdminTeamList(); showLoading(false);
   });
   document.getElementById('resetTeamFormBtn')?.addEventListener('click', resetTeamForm);
   document.getElementById('refreshUserNews').addEventListener('click', () => { renderNewsFeed(); renderITTeam(); });
@@ -365,7 +340,7 @@
   const closeModal=document.getElementById('closeModalBtn'), cancel=document.getElementById('cancelModalBtn'), send=document.getElementById('sendComplaintBtn');
   function openModalFn() { modal.classList.remove('opacity-0','invisible'); modal.classList.add('opacity-100','visible'); document.body.style.overflow='hidden'; }
   function closeModalFn() { modal.classList.add('opacity-0','invisible'); modal.classList.remove('opacity-100','visible'); document.body.style.overflow=''; document.getElementById('complaintName').value=''; document.getElementById('complaintDept').value=''; document.getElementById('complaintDesc').value=''; }
-  function sendComplaint() { const name=document.getElementById('complaintName').value.trim(), dept=document.getElementById('complaintDept').value.trim(), issue=document.getElementById('complaintDesc').value.trim(); if(!name||!issue){ alert("Name and description required"); return; } const ts=new Date().toLocaleString(); const msg=`🔧 *M&P TECH INCIDENT* 🔧%0A*Reporter:* ${name}${dept?` (${dept})`:''}%0A*Time:* ${ts}%0A*Issue:* ${issue}%0A*Cloud Portal*`; window.open(`https://wa.me/${DEFAULT_IT_ENGINEER}?text=${encodeURIComponent(msg)}`,'_blank'); alert("WhatsApp will open. Send to notify engineer."); closeModalFn(); }
+  function sendComplaint() { const name=document.getElementById('complaintName').value.trim(), dept=document.getElementById('complaintDept').value.trim(), issue=document.getElementById('complaintDesc').value.trim(); if(!name||!issue){ alert("Name and description required"); return; } const ts=new Date().toLocaleString(); const msg=`🔧 *M&P TECH INCIDENT* 🔧%0A*Reporter:* ${name}${dept?` (${dept})`:''}%0A*Time:* ${ts}%0A*Issue:* ${issue}`; window.open(`https://wa.me/${DEFAULT_IT_ENGINEER}?text=${encodeURIComponent(msg)}`,'_blank'); alert("WhatsApp will open. Send to notify engineer."); closeModalFn(); }
   openBtn.addEventListener('click',openModalFn); closeModal.addEventListener('click',closeModalFn); cancel.addEventListener('click',closeModalFn); send.addEventListener('click',sendComplaint); modal.addEventListener('click',(e)=>{if(e.target===modal)closeModalFn();});
 
   // Initial load
@@ -374,7 +349,7 @@
   await updateAdminUI();
 </script>
 <div class="text-center text-xs text-gray-400 border-t border-orange-200 max-w-7xl mx-auto px-4 pb-6 pt-5 mt-3">
-  <i class="fas fa-fire text-orange-500"></i> M&P TECH Cloud Portal | Admin: <strong>admin123</strong> | Data stored in Firebase Firestore | Image URLs must be publicly accessible (direct link)
+  <i class="fas fa-fire text-orange-500"></i> M&P TECH Cloud Portal | Admin: <strong>admin123</strong> | Images uploaded to Firebase Storage (free 5GB)
 </div>
 </body>
 </html>
